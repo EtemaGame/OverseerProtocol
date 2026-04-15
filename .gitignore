@@ -1,0 +1,10 @@
+bin/
+obj/
+.vs/
+.idea/
+artifacts/
+references/
+*.user
+*.suo
+*.cache
+.DS_Store

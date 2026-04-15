@@ -1,0 +1,16 @@
+<Project>
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+
+    <ProjectRoot>$(MSBuildThisFileDirectory)</ProjectRoot>
+    <ReferencesRoot>$(ProjectRoot)references\</ReferencesRoot>
+    <BepInExReferences>$(ReferencesRoot)bepinex\</BepInExReferences>
+    <GameReferences>$(ReferencesRoot)game\</GameReferences>
+    <ArtifactsRoot>$(ProjectRoot)artifacts\</ArtifactsRoot>
+  </PropertyGroup>
+</Project>
