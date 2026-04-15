@@ -22,6 +22,12 @@ public static class DataExportFeature
         var moons = moonReader.ReadAllMoons();
         moonExporter.ExportAll(moons);
 
+        // Enemies
+        var enemyReader = new EnemyCatalogReader();
+        var enemyExporter = new EnemyExporter();
+        var enemies = enemyReader.ReadAllEnemies();
+        enemyExporter.ExportAll(enemies);
+
         OPLog.Info("Export", "Export inicial de datos completado.");
     }
 }
