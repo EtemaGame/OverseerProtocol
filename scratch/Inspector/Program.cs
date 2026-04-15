@@ -9,38 +9,32 @@ public class Inspector
         try
         {
             var assembly = Assembly.LoadFrom("D:\\LethalMod\\OverseerProtocol\\references\\game\\Assembly-CSharp.dll");
-            var type = assembly.GetType("EnemyType");
-            if (type == null)
-            {
-                Console.WriteLine("Type Not Found");
-                return;
-            }
-
-            Console.WriteLine("--- Fields in EnemyType ---");
-            var fields = type.GetFields(BindingFlags.Public | BindingFlags.Instance);
-            foreach (var f in fields)
-            {
-                try {
-                    Console.WriteLine($"{f.Name} (Type: {f.FieldType.Name})");
-                } catch (Exception ex) {
-                    Console.WriteLine($"{f.Name} (Error reading type: {ex.Message})");
-                }
-            }
             
-            Console.WriteLine("--- Properties in EnemyType ---");
-            var props = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
-            foreach (var p in props)
-            {
-                try {
-                    Console.WriteLine($"{p.Name} (Type: {p.PropertyType.Name})");
-                } catch (Exception ex) {
-                    Console.WriteLine($"{p.Name} (Error reading type: {ex.Message})");
-                }
-            }
+            InspectType(assembly, "Terminal");
+            InspectType(assembly, "TerminalNode");
+            InspectType(assembly, "CompatibleNoun");
         }
         catch (Exception ex)
         {
             Console.WriteLine(ex.ToString());
+        }
+    }
+
+    static void InspectType(Assembly assembly, string typeName)
+    {
+        Console.WriteLine($"\n--- Inspecting {typeName} ---");
+        var type = assembly.GetType(typeName);
+        if (type == null) {
+            Console.WriteLine("Type Not Found");
+            return;
+        }
+
+        foreach (var f in type.GetFields(BindingFlags.Public | BindingFlags.Instance)) {
+            try {
+                Console.WriteLine($"Field: {f.Name} (Type: {f.FieldType.Name})");
+            } catch (Exception ex) {
+                Console.WriteLine($"Field: {f.Name} (Error reading type: {ex.Message})");
+            }
         }
     }
 }

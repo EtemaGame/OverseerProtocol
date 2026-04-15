@@ -32,6 +32,10 @@
       <HintPath>$(GameReferences)UnityEngine.CoreModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Unity.Netcode.Runtime">
+      <HintPath>$(GameReferences)Unity.Netcode.Runtime.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
   </ItemGroup>
 
 </Project>
