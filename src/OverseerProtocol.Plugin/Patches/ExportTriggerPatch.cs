@@ -15,13 +15,13 @@ namespace OverseerProtocol.Patches
         {
             if (!_initialExportCompleted)
             {
-                OPLog.Info("Export trigger: running initial item export.");
+                OPLog.Info("Export", "Export trigger: running initial item export.");
                 DataExportFeature.RunInitialExport();
                 _initialExportCompleted = true;
             }
             else
             {
-                OPLog.Info("Export trigger: initial export already completed, skipping.");
+                OPLog.Info("Export", "Export trigger: initial export already completed, skipping.");
             }
         }
     }

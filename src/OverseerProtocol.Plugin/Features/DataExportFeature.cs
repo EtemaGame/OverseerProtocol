@@ -8,14 +8,20 @@ public static class DataExportFeature
 {
     public static void RunInitialExport()
     {
-        OPLog.Info("Iniciando export de datos del juego...");
+        OPLog.Info("Export", "Iniciando export de datos del juego...");
 
+        // Items
         var itemReader = new ItemCatalogReader();
         var itemExporter = new ItemExporter();
-
         var items = itemReader.ReadAllItems();
         itemExporter.ExportAll(items);
 
-        OPLog.Info("Export inicial de items completado.");
+        // Moons
+        var moonReader = new MoonCatalogReader();
+        var moonExporter = new MoonExporter();
+        var moons = moonReader.ReadAllMoons();
+        moonExporter.ExportAll(moons);
+
+        OPLog.Info("Export", "Export inicial de datos completado.");
     }
 }

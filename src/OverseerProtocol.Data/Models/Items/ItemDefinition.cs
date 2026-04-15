@@ -3,7 +3,8 @@ namespace OverseerProtocol.Data.Models.Items;
 public sealed class ItemDefinition
 {
     public string Id { get; set; } = "";
-    public string Name { get; set; } = "";
+    public string InternalName { get; set; } = "";
+    public string DisplayName { get; set; } = "";
     public string? Category { get; set; }
     public int CreditsWorth { get; set; }
     public float Weight { get; set; }

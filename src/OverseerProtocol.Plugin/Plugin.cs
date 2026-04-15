@@ -25,12 +25,12 @@ namespace OverseerProtocol
             Log = Logger;
             
             Bootstrapper.Initialize(Logger);
-            OPLog.Info($"{ModName} cargando core phase...");
+            OPLog.Info("Bootstrap", $"{ModName} cargando core phase...");
 
             _harmony = new Harmony(ModGuid);
             _harmony.PatchAll();
 
-            OPLog.Info("Harmony inicializado");
+            OPLog.Info("Bootstrap", "Harmony inicializado");
 
             if (AutoExportGameData)
             {

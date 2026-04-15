@@ -13,13 +13,13 @@ public class ItemCatalogReader
 
         if (StartOfRound.Instance == null)
         {
-            OPLog.Warning("ItemCatalogReader: StartOfRound.Instance is null. Cannot read item catalog yet.");
+            OPLog.Warning("Items", "StartOfRound.Instance is null. Cannot read item catalog yet.");
             return definitions;
         }
 
         if (StartOfRound.Instance.allItemsList == null)
         {
-            OPLog.Warning("ItemCatalogReader: allItemsList is null on StartOfRound.Instance.");
+            OPLog.Warning("Items", "allItemsList is null on StartOfRound.Instance.");
             return definitions;
         }
 
@@ -27,11 +27,11 @@ public class ItemCatalogReader
 
         if (items == null)
         {
-            OPLog.Warning("ItemCatalogReader: itemsList is null in allItemsList.");
+            OPLog.Warning("Items", "itemsList is null in allItemsList.");
             return definitions;
         }
 
-        OPLog.Info($"ItemCatalogReader: Found {items.Count} items in StartOfRound allItemsList.");
+        OPLog.Info("Items", $"Found {items.Count} items in StartOfRound allItemsList.");
 
         foreach (var item in items)
         {
@@ -40,7 +40,8 @@ public class ItemCatalogReader
             var def = new ItemDefinition
             {
                 Id = item.name,
-                Name = item.itemName,
+                InternalName = item.name,
+                DisplayName = item.itemName,
                 CreditsWorth = item.creditsWorth,
                 Weight = item.weight,
                 IsScrap = item.isScrap,
