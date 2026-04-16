@@ -41,6 +41,9 @@ public static class OPPaths
     public static string RulesRoot =>
         Path.Combine(DataRoot, "rules");
 
+    public static string DefinitionsRoot =>
+        Path.Combine(DataRoot, "definitions");
+
     public static string ItemExportPath =>
         Path.Combine(ItemExportRoot, "items.json");
 
@@ -61,6 +64,12 @@ public static class OPPaths
 
     public static string LobbyRulesPath =>
         Path.Combine(RulesRoot, "lobby-rules.json");
+
+    public static string RuntimeRulesPath =>
+        Path.Combine(RulesRoot, "runtime-rules.json");
+
+    public static string PerkCatalogPath =>
+        Path.Combine(DefinitionsRoot, "perks.json");
 
     public static string ItemOverridePath =>
         Path.Combine(OverridesRoot, "items.override.json");
@@ -97,6 +106,11 @@ public static class OPPaths
             ? LobbyRulesPath
             : Path.Combine(GetPresetRulesRoot(presetName), "lobby-rules.json");
 
+    public static string GetPresetRuntimeRulesPath(string presetName) =>
+        string.Equals(SanitizePathSegment(presetName), "default", System.StringComparison.OrdinalIgnoreCase)
+            ? RuntimeRulesPath
+            : Path.Combine(GetPresetRulesRoot(presetName), "runtime-rules.json");
+
     public static void EnsureDirectories()
     {
         Directory.CreateDirectory(PluginRoot);
@@ -111,6 +125,7 @@ public static class OPPaths
         Directory.CreateDirectory(PresetsRoot);
         Directory.CreateDirectory(PersistenceRoot);
         Directory.CreateDirectory(RulesRoot);
+        Directory.CreateDirectory(DefinitionsRoot);
     }
 
     private static string GetOverridePath(string fileName, string presetName)

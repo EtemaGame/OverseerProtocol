@@ -49,3 +49,32 @@ Perk definitions are modeled separately from saved ranks:
 - `shipPerks`: Scanner, battery, travel discount, dropship, loot saver, and similar ship stats.
 
 The current implementation only defines the model. Runtime perk application should come after item/spawn/moon overrides and terminal/admin tooling are stable.
+
+Default perk definitions are seeded to:
+
+```text
+BepInEx/plugins/OverseerProtocol/overseer-data/definitions/perks.json
+```
+
+Config gate:
+
+```ini
+[Progression]
+EnablePerkCatalog = true
+```
+
+Seeded player perk IDs:
+
+- `player-sprint`
+- `player-stamina`
+- `player-carry`
+- `player-climb`
+- `player-resistance`
+
+Seeded ship perk IDs:
+
+- `ship-scanner`
+- `ship-battery`
+- `ship-travel-discount`
+- `ship-dropship`
+- `ship-deadline`

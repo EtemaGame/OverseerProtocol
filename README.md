@@ -33,8 +33,15 @@ Once the state is organized, OverseerProtocol allows for runtime modifications t
 - [x] **Validation Layer**: Cross-reference resolution and safety checks.
 - [x] **Hybrid Config**: `.cfg` for simple toggles + JSON for complex profiles.
 - [x] **Moon Economy V2**: Route price resolution and raw TerminalNode economy export.
-- [x] **Presets V1**: Built-in Vanilla Plus and Hardcore preset manifests with safe multipliers.
+- [x] **Moon Overrides (V1)**: Risk labels and route prices through `moons.override.json`.
+- [x] **Presets V1**: Built-in preset manifests, safe multipliers, override templates, and rules templates.
 - [x] **Semantic Difficulty V1**: Aggression profiles layered over spawn rarity multipliers.
+- [x] **Runtime Snapshot V1**: In-memory vanilla baseline for reset/reload workflows.
+- [x] **Runtime Rules V1**: Data contract for quota, deadline, travel, weather, ship, and moon-specific rules.
+- [x] **Progression Persistence V1**: Data-only player/ship progression save model.
+- [x] **Perk Catalog V1**: Seeded player and ship perk definition model.
+- [x] **Admin Commands V1**: Command service for export, reload, reset, fingerprints, rules, perks, and handshake summaries.
+- [x] **Handshake Contract V1**: Host/client compatibility payload with preset/config fingerprints.
 
 ---
 

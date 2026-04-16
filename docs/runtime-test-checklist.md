@@ -9,6 +9,12 @@ This branch intentionally advanced features without runtime testing. Use this ch
 - Confirm BepInEx loads `com.overseerprotocol.core`.
 - Confirm no loader errors for new classes or missing references.
 
+Optional JSON sanity check from the repo root:
+
+```text
+.\node-v24.14.1-win-x64\node.exe tools\validate-json.mjs data\sample-overrides\spawns.override.json data\sample-overrides\moons.override.json data\sample-overrides\runtime-rules.json
+```
+
 ## 2. First Startup
 
 Expected generated folders:
@@ -22,7 +28,9 @@ Expected generated folders:
 Expected generated files:
 
 - `saves/progression.json`
+- `definitions/perks.json`
 - `rules/lobby-rules.json` or preset-specific `rules/lobby-rules.json`
+- `rules/runtime-rules.json` or preset-specific `rules/runtime-rules.json`
 - built-in preset manifests and empty override templates.
 
 ## 3. Export Baseline
@@ -119,7 +127,20 @@ These are data-only for now:
 - `progression.json`
 - perk catalog models
 - `lobby-rules.json`
+- `runtime-rules.json`
 - protocol handshake models
 - `AdminCommandService`
 
 Do not expect perks, expanded lobby, late join, spectator mode, or terminal UI hooks to work until their runtime integrations are implemented.
+
+## 11. Admin Command Service
+
+Once terminal hook testing is available, verify:
+
+- `op export`
+- `op reload`
+- `op reset`
+- `op fingerprint`
+- `op rules`
+- `op perks`
+- `op handshake`

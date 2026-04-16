@@ -40,9 +40,13 @@ AggressionProfile = Balanced
 
 [Progression]
 EnableProgressionStorage = true
+EnablePerkCatalog = true
 
 [Lobby]
 EnableLobbyRulesLoading = true
+
+[RuntimeRules]
+EnableRuntimeRulesLoading = true
 ```
 
 ## Preset Resolution
@@ -92,6 +96,7 @@ Exports still happen before overrides and multipliers when `EnableDataExport = t
 
 - `StrictValidation`: when enabled, any validation warning aborts the affected override flow. Validation errors always abort.
 - `DryRunOverrides`: when enabled, the mod still exports and validates configuration, but it does not apply item overrides, spawn overrides, or runtime multipliers.
+- `AbortOnInvalidOverrideBlock`: reserved strict policy flag for future validators that should abort instead of skipping invalid blocks.
 
 Before export, OverseerProtocol captures a lightweight in-memory runtime snapshot for item values and moon spawn pools. The snapshot is restored after export and before overrides, keeping the exported catalogs and the mutation baseline aligned with vanilla runtime state.
 
@@ -108,3 +113,7 @@ This is data-only for now. Runtime perks are intentionally deferred until the ov
 ## Lobby Rules
 
 `EnableLobbyRulesLoading` creates and loads the V1 lobby rules file. This is also data-only for now; expanded lobby, late join, spectator mode, and handshake enforcement remain future runtime work.
+
+## Runtime Rules
+
+`EnableRuntimeRulesLoading` creates and loads the V1 runtime rules file for future quota, deadline, travel discount, ship timing, weather reward, and moon-specific balancing.

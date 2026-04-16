@@ -4,7 +4,9 @@ using OverseerProtocol.Core.Logging;
 using OverseerProtocol.Core.Paths;
 using OverseerProtocol.Core.Serialization;
 using OverseerProtocol.Data.Models;
+using OverseerProtocol.Data.Models.Lobby;
 using OverseerProtocol.Data.Models.Presets;
+using OverseerProtocol.Data.Models.Rules;
 
 namespace OverseerProtocol.Features;
 
@@ -113,6 +115,8 @@ public static class PresetBootstrapFeature
         EnsureTemplate(OPPaths.GetItemOverridePath(presetId), new ItemOverrideCollection());
         EnsureTemplate(OPPaths.GetSpawnOverridePath(presetId), new SpawnOverrideCollection());
         EnsureTemplate(OPPaths.GetMoonOverridePath(presetId), new MoonOverrideCollection());
+        EnsureTemplate(OPPaths.GetPresetLobbyRulesPath(presetId), new LobbyRulesDefinition());
+        EnsureTemplate(OPPaths.GetPresetRuntimeRulesPath(presetId), new RuntimeRulesDefinition());
     }
 
     private static void EnsureTemplate<T>(string path, T template)

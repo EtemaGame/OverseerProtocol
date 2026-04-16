@@ -12,9 +12,12 @@ public static class OPConfig
     public static ConfigEntry<bool> EnableSpawnOverrides { get; private set; } = null!;
     public static ConfigEntry<bool> EnableRuntimeMultipliers { get; private set; } = null!;
     public static ConfigEntry<bool> EnableProgressionStorage { get; private set; } = null!;
+    public static ConfigEntry<bool> EnablePerkCatalog { get; private set; } = null!;
     public static ConfigEntry<bool> EnableLobbyRulesLoading { get; private set; } = null!;
+    public static ConfigEntry<bool> EnableRuntimeRulesLoading { get; private set; } = null!;
     public static ConfigEntry<bool> StrictValidation { get; private set; } = null!;
     public static ConfigEntry<bool> DryRunOverrides { get; private set; } = null!;
+    public static ConfigEntry<bool> AbortOnInvalidOverrideBlock { get; private set; } = null!;
     public static ConfigEntry<string> ActivePreset { get; private set; } = null!;
     public static ConfigEntry<string> AggressionProfile { get; private set; } = null!;
     public static ConfigEntry<float> ItemWeightMultiplier { get; private set; } = null!;
@@ -74,11 +77,23 @@ public static class OPConfig
             true,
             "Creates and loads the progression save file used by future player and ship perks.");
 
+        EnablePerkCatalog = config.Bind(
+            "Progression",
+            "EnablePerkCatalog",
+            true,
+            "Creates and loads perks.json definitions for future player and ship perk application.");
+
         EnableLobbyRulesLoading = config.Bind(
             "Lobby",
             "EnableLobbyRulesLoading",
             true,
             "Creates and loads lobby-rules.json for future expanded lobby, late join, and sync enforcement.");
+
+        EnableRuntimeRulesLoading = config.Bind(
+            "RuntimeRules",
+            "EnableRuntimeRulesLoading",
+            true,
+            "Creates and loads runtime-rules.json for future economy, ship, weather, and moon-specific rules.");
 
         StrictValidation = config.Bind(
             "Validation",
@@ -91,6 +106,12 @@ public static class OPConfig
             "DryRunOverrides",
             false,
             "When true, override files are loaded and validated but no runtime item/spawn mutations are applied.");
+
+        AbortOnInvalidOverrideBlock = config.Bind(
+            "Validation",
+            "AbortOnInvalidOverrideBlock",
+            false,
+            "Reserved policy flag for stricter validators. When true, invalid override blocks should abort the affected flow instead of being skipped.");
 
         AggressionProfile = config.Bind(
             "SemanticDifficulty",
