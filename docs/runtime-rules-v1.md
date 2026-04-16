@@ -60,11 +60,22 @@ EnableRuntimeRulesLoading = true
 
 ## Current Status
 
-V1 creates, loads, and normalizes this file. Most fields are not yet runtime-applied.
+V1 creates, loads, normalizes, and partially applies this file. Most fields are still reserved until their runtime hooks are verified.
 
-Already active elsewhere:
+Active now:
 
 - Global route prices can be changed with `RoutePriceMultiplier`.
 - Per-moon route prices can be changed with `moons.override.json`.
+- `economy.travelDiscountMultiplier` is applied to terminal route prices.
+- `moonRules.<moonId>.routePriceMultiplier` is applied to terminal route prices for that moon.
 
-Future runtime hooks should consume this contract for quota, deadline, loot retention, ship timings, weather reward tuning, and moon-specific rule composition.
+Reserved/experimental:
+
+- `quotaMultiplier`
+- `deadlineMultiplier`
+- `scrapValueMultiplier`
+- `preserveShipLootOnTeamWipe`
+- ship timing fields
+- weather reward fields
+
+Future runtime hooks should consume this contract for quota, deadline, loot retention, ship timings, weather reward tuning, and broader moon-specific rule composition.

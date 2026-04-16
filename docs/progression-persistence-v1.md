@@ -78,3 +78,13 @@ Seeded ship perk IDs:
 - `ship-travel-discount`
 - `ship-dropship`
 - `ship-deadline`
+
+## Debug Commands
+
+The admin command service includes data-only progression debug commands:
+
+- `op progression`
+- `op progression grant ship <amount>`
+- `op progression reset ship`
+
+These mutate `progression.json` only. They do not apply gameplay perk effects by themselves.

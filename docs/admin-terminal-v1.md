@@ -18,7 +18,10 @@ op reset
 op fingerprint
 op rules
 op perks
+op progression
 op handshake
+op multiplayer
+op sync snapshot
 op validate
 ```
 
@@ -33,11 +36,25 @@ op validate
 - `op fingerprint`: Reports the current preset/config fingerprints.
 - `op rules`: Reports current lobby/runtime rules summary.
 - `op perks`: Reports current perk catalog and progression summary.
+- `op progression`: Reports ship/player progression summary.
+- `op progression grant ship <amount>`: Debug command that grants ship XP.
+- `op progression reset ship`: Debug command that resets ship progression.
 - `op handshake`: Reports the current handshake summary.
+- `op multiplayer`: Reports experimental multiplayer status.
+- `op multiplayer apply`: Re-applies experimental multiplayer rules.
+- `op sync snapshot`: Reports a reserved sync snapshot summary for future state sync.
 - `op validate`: Explains the current dry-run validation workflow.
 
 ## Next Hook
 
-Once runtime testing is available, patch the game `Terminal` input flow and pass submitted text to `AdminCommandService.Execute`.
+The experimental hook patches the game `Terminal` input flow and passes submitted text to `AdminCommandService.Execute`.
+
+It is controlled by:
+
+```ini
+[Admin]
+EnableAdminTerminalCommands = false
+AdminCommandPrefix = op
+```
 
 If `AdminCommandResult.Handled` is true, render `AdminCommandResult.Message` in the terminal and prevent vanilla command handling for that input.

@@ -45,8 +45,20 @@ EnablePerkCatalog = true
 [Lobby]
 EnableLobbyRulesLoading = true
 
+[ExperimentalMultiplayer]
+EnableExperimentalMultiplayer = false
+EnableExpandedLobbyPatch = false
+EnableLateJoinSafeMode = false
+EnableSpectatorModeScaffold = false
+EnableHandshakeCompatibilityChecks = true
+ExperimentalMaxPlayers = 4
+
 [RuntimeRules]
 EnableRuntimeRulesLoading = true
+
+[Admin]
+EnableAdminTerminalCommands = false
+AdminCommandPrefix = op
 ```
 
 ## Preset Resolution
@@ -96,7 +108,7 @@ Exports still happen before overrides and multipliers when `EnableDataExport = t
 
 - `StrictValidation`: when enabled, any validation warning aborts the affected override flow. Validation errors always abort.
 - `DryRunOverrides`: when enabled, the mod still exports and validates configuration, but it does not apply item overrides, spawn overrides, or runtime multipliers.
-- `AbortOnInvalidOverrideBlock`: reserved strict policy flag for future validators that should abort instead of skipping invalid blocks.
+- `AbortOnInvalidOverrideBlock`: strict policy flag. When enabled, validation warnings abort the affected override flow instead of applying the sanitized subset.
 
 Before export, OverseerProtocol captures a lightweight in-memory runtime snapshot for item values and moon spawn pools. The snapshot is restored after export and before overrides, keeping the exported catalogs and the mutation baseline aligned with vanilla runtime state.
 
@@ -114,6 +126,23 @@ This is data-only for now. Runtime perks are intentionally deferred until the ov
 
 `EnableLobbyRulesLoading` creates and loads the V1 lobby rules file. This is also data-only for now; expanded lobby, late join, spectator mode, and handshake enforcement remain future runtime work.
 
+## Experimental Multiplayer
+
+Experimental multiplayer is disabled by default. It provides reflection-based scaffolding for expanded lobby diagnostics, late-join policy checks, spectator diagnostics, and future handshake/sync work.
+
+Current behavior:
+
+- `EnableExpandedLobbyPatch`: attempts to set known max-player integer fields/properties on known singleton objects. This is not guaranteed to patch UI, ownership, spawn lifecycle, or network approval.
+- `EnableLateJoinSafeMode`: evaluates late-join policy and blocks `Moon` mode by policy until state recovery exists.
+- `EnableSpectatorModeScaffold`: logs spectator readiness only; it does not control player lifecycle yet.
+- `EnableHandshakeCompatibilityChecks`: keeps local handshake comparison services available for future networking.
+
 ## Runtime Rules
 
 `EnableRuntimeRulesLoading` creates and loads the V1 runtime rules file for future quota, deadline, travel discount, ship timing, weather reward, and moon-specific balancing.
+
+## Admin Terminal
+
+`EnableAdminTerminalCommands` enables the experimental Terminal hook. It is disabled by default because Terminal input patches are compatibility-sensitive.
+
+When enabled, commands use `AdminCommandPrefix`, which defaults to `op`.

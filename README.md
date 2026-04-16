@@ -26,6 +26,12 @@ Once the state is organized, OverseerProtocol allows for runtime modifications t
 
 ## 🚀 Development Status (Foundation V1)
 
+The official project roadmap lives in [`ROADMAP.md`](ROADMAP.md). It is the source of truth for phase order, gates, non-goals, and the distinction between runtime features, experimental scaffolds, and data-only contracts.
+
+Reference setup instructions live in [`docs/references-setup.md`](docs/references-setup.md).
+
+Latest implementation review: [`docs/implementation-review-2026-04-16.md`](docs/implementation-review-2026-04-16.md).
+
 - [x] **Infrastructure**: BepInEx loading, Harmony patching, stable lifecycle triggers.
 - [x] **Data Layer**: Clean exports for items, moons, and enemies.
 - [x] **Item Overrides (V1)**: Runtime modification of weight and store prices.
@@ -37,11 +43,21 @@ Once the state is organized, OverseerProtocol allows for runtime modifications t
 - [x] **Presets V1**: Built-in preset manifests, safe multipliers, override templates, and rules templates.
 - [x] **Semantic Difficulty V1**: Aggression profiles layered over spawn rarity multipliers.
 - [x] **Runtime Snapshot V1**: In-memory vanilla baseline for reset/reload workflows.
-- [x] **Runtime Rules V1**: Data contract for quota, deadline, travel, weather, ship, and moon-specific rules.
-- [x] **Progression Persistence V1**: Data-only player/ship progression save model.
+- [x] **Runtime Rules V1**: Data contract plus active route/travel-discount rule application.
+- [x] **Progression Persistence V1**: Data-only player/ship progression save model with ship debug commands.
 - [x] **Perk Catalog V1**: Seeded player and ship perk definition model.
-- [x] **Admin Commands V1**: Command service for export, reload, reset, fingerprints, rules, perks, and handshake summaries.
-- [x] **Handshake Contract V1**: Host/client compatibility payload with preset/config fingerprints.
+- [x] **Admin Commands V1**: Command service for export, reload, reset, fingerprints, rules, perks, progression, multiplayer, and handshake summaries.
+- [x] **Admin Terminal Hook V1**: Experimental terminal hook, disabled by default.
+- [x] **Handshake Contract V1**: Host/client compatibility payload with preset/config fingerprints and local comparison service.
+- [x] **Experimental Multiplayer V1**: Disabled-by-default scaffold for expanded lobby diagnostics, late-join policy, spectator diagnostics, and reserved sync snapshots.
+- [x] **Reference Setup V1**: Helper script for BepInEx/Harmony download and local game assembly copy.
+
+## Current Verification Status
+
+- BepInEx and Harmony references are present under `references/bepinex`.
+- Lethal Company game assemblies are still required under `references/game` before a real build can validate game symbols.
+- JSON sample validation passes with local Node.
+- `dotnet build` is pending because `dotnet` is not currently available in PATH.
 
 ---
 

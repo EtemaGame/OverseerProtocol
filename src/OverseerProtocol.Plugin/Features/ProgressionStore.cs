@@ -9,6 +9,8 @@ namespace OverseerProtocol.Features;
 
 public sealed class ProgressionStore
 {
+    private const int ExperiencePerLevel = 100;
+
     public ProgressionData LoadOrCreate()
     {
         var data = JsonFileReader.Read<ProgressionData>(OPPaths.ProgressionSavePath);
@@ -25,6 +27,33 @@ public sealed class ProgressionStore
     {
         data.LastUpdatedUtc = DateTime.UtcNow.ToString("O");
         JsonFileWriter.Write(OPPaths.ProgressionSavePath, data);
+    }
+
+    public ProgressionData GrantShipExperience(int amount)
+    {
+        var data = LoadOrCreate();
+        var safeAmount = Math.Max(0, amount);
+        data.Ship.Experience += safeAmount;
+
+        while (data.Ship.Experience >= ExperiencePerLevel)
+        {
+            data.Ship.Experience -= ExperiencePerLevel;
+            data.Ship.Level++;
+            data.Ship.UnspentPoints++;
+        }
+
+        Save(data);
+        OPLog.Info("Progression", $"Granted {safeAmount} ship XP. level={data.Ship.Level}, xp={data.Ship.Experience}, points={data.Ship.UnspentPoints}");
+        return data;
+    }
+
+    public ProgressionData ResetShipProgression()
+    {
+        var data = LoadOrCreate();
+        data.Ship = new ShipProgressionData();
+        Save(data);
+        OPLog.Info("Progression", "Reset ship progression.");
+        return data;
     }
 
     private static ProgressionData CreateDefault() =>

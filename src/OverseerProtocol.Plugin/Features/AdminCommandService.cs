@@ -12,15 +12,21 @@ public sealed class AdminCommandService
             return AdminCommandResult.NotHandled();
 
         var normalized = input.Trim();
-        if (!normalized.StartsWith("op ", StringComparison.OrdinalIgnoreCase) &&
-            !string.Equals(normalized, "op", StringComparison.OrdinalIgnoreCase))
+        var prefix = OPConfig.AdminCommandPrefix?.Value;
+        if (string.IsNullOrWhiteSpace(prefix))
+            prefix = "op";
+
+        prefix = prefix.Trim();
+
+        if (!normalized.StartsWith(prefix + " ", StringComparison.OrdinalIgnoreCase) &&
+            !string.Equals(normalized, prefix, StringComparison.OrdinalIgnoreCase))
         {
             return AdminCommandResult.NotHandled();
         }
 
-        var command = normalized.Length == 2
+        var command = normalized.Length == prefix.Length
             ? "help"
-            : normalized.Substring(3).Trim().ToLowerInvariant();
+            : normalized.Substring(prefix.Length + 1).Trim().ToLowerInvariant();
 
         switch (command)
         {
@@ -46,17 +52,31 @@ public sealed class AdminCommandService
                 return AdminCommandResult.FromHandled(GetRulesText());
             case "perks":
                 return AdminCommandResult.FromHandled(GetPerksText());
+            case "progression":
+                return AdminCommandResult.FromHandled(GetProgressionText());
+            case "progression reset ship":
+                return AdminCommandResult.FromHandled(ResetShipProgression());
             case "handshake":
                 return AdminCommandResult.FromHandled(GetHandshakeText());
+            case "multiplayer":
+                return AdminCommandResult.FromHandled(new ExperimentalMultiplayerFeature().GetStatusText());
+            case "multiplayer apply":
+                new ExperimentalMultiplayerFeature().Apply();
+                return AdminCommandResult.FromHandled("Experimental multiplayer rules applied. Check logs for reflection patch results.");
+            case "sync snapshot":
+                return AdminCommandResult.FromHandled(GetSyncSnapshotText());
             case "validate":
                 return AdminCommandResult.FromHandled("Validation runs during startup/reload. Enable DryRunOverrides=true to validate without runtime mutations.");
             default:
+                if (command.StartsWith("progression grant ship ", StringComparison.OrdinalIgnoreCase))
+                    return AdminCommandResult.FromHandled(GrantShipExperience(command));
+
                 return AdminCommandResult.FromHandled($"Unknown OverseerProtocol command '{command}'. Try: op help");
         }
     }
 
     private static string GetHelpText() =>
-        "OverseerProtocol commands: op help, op preset, op paths, op export, op reload, op reset, op fingerprint, op rules, op perks, op handshake, op validate";
+        "OverseerProtocol commands: op help, op preset, op paths, op export, op reload, op reset, op fingerprint, op rules, op perks, op progression, op handshake, op multiplayer, op sync snapshot, op validate";
 
     private static string GetPathsText() =>
         "DataRoot: " + OPPaths.DataRoot + "\n" +
@@ -106,6 +126,43 @@ public sealed class AdminCommandService
                "Ship perks: " + catalog.ShipPerks.Count + "\n" +
                "Saved players: " + progression.Players.Count + "\n" +
                "Ship level: " + progression.Ship.Level;
+    }
+
+    private static string GetProgressionText()
+    {
+        var progression = new ProgressionStore().LoadOrCreate();
+        return "Ship level: " + progression.Ship.Level + "\n" +
+               "Ship XP: " + progression.Ship.Experience + "\n" +
+               "Ship unspent points: " + progression.Ship.UnspentPoints + "\n" +
+               "Saved players: " + progression.Players.Count;
+    }
+
+    private static string GrantShipExperience(string command)
+    {
+        var rawAmount = command.Substring("progression grant ship ".Length).Trim();
+        if (!int.TryParse(rawAmount, out var amount))
+            return "Invalid ship XP amount.";
+
+        var progression = new ProgressionStore().GrantShipExperience(amount);
+        return "Granted ship XP. level=" + progression.Ship.Level +
+               ", xp=" + progression.Ship.Experience +
+               ", points=" + progression.Ship.UnspentPoints;
+    }
+
+    private static string ResetShipProgression()
+    {
+        new ProgressionStore().ResetShipProgression();
+        return "Ship progression reset.";
+    }
+
+    private static string GetSyncSnapshotText()
+    {
+        var snapshot = new ExperimentalMultiplayerFeature().BuildReservedSyncSnapshot();
+        return "Sync snapshot: " + snapshot.SnapshotId + "\n" +
+               "Active preset: " + snapshot.ActivePreset + "\n" +
+               "Ship entries: " + snapshot.ShipState.Count + "\n" +
+               "Moon entries: " + snapshot.MoonState.Count + "\n" +
+               "Object entries: " + snapshot.ObjectState.Count;
     }
 }
 

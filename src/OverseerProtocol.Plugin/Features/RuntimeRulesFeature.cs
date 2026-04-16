@@ -4,11 +4,14 @@ using OverseerProtocol.Core.Logging;
 using OverseerProtocol.Core.Paths;
 using OverseerProtocol.Core.Serialization;
 using OverseerProtocol.Data.Models.Rules;
+using OverseerProtocol.GameAbstractions.Overrides;
 
 namespace OverseerProtocol.Features;
 
 public sealed class RuntimeRulesFeature
 {
+    private readonly RuntimeRulesApplier _applier = new();
+
     public RuntimeRulesDefinition LoadOrCreate()
     {
         var path = OPPaths.GetPresetRuntimeRulesPath(OPConfig.ActivePresetName);
@@ -24,6 +27,11 @@ public sealed class RuntimeRulesFeature
         Normalize(rules);
         OPLog.Info("RuntimeRules", $"Loaded runtime rules from {path}: quota={rules.Economy.QuotaMultiplier:0.###}, deadline={rules.Economy.DeadlineMultiplier:0.###}, moonRules={rules.MoonRules.Count}");
         return rules;
+    }
+
+    public void Apply(RuntimeRulesDefinition rules)
+    {
+        _applier.Apply(rules);
     }
 
     private static void Normalize(RuntimeRulesDefinition rules)

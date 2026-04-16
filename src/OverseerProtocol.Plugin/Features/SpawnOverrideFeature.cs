@@ -45,10 +45,11 @@ public sealed class SpawnOverrideFeature
         var validationResult = _validator.Validate(collection, references);
         validationResult.Report.WriteToLog("Validation");
 
-        if (!validationResult.CanApplyWithStrictMode(OPConfig.StrictValidation.Value))
+        var abortOnWarnings = OPConfig.StrictValidation.Value || OPConfig.AbortOnInvalidOverrideBlock.Value;
+        if (!validationResult.CanApplyWithStrictMode(abortOnWarnings))
         {
-            var reason = OPConfig.StrictValidation.Value && validationResult.Report.WarningCount > 0
-                ? "strict validation is enabled and warnings were reported"
+            var reason = abortOnWarnings && validationResult.Report.WarningCount > 0
+                ? "strict override validation is enabled and warnings were reported"
                 : "critical validation errors were reported";
 
             OPLog.Warning("Validation", $"Spawn override collection was not applied because {reason}.");

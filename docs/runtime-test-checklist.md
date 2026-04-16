@@ -15,6 +15,14 @@ Optional JSON sanity check from the repo root:
 .\node-v24.14.1-win-x64\node.exe tools\validate-json.mjs data\sample-overrides\spawns.override.json data\sample-overrides\moons.override.json data\sample-overrides\runtime-rules.json
 ```
 
+Reference sanity check:
+
+```text
+powershell -ExecutionPolicy Bypass -File tools\verify-env.ps1
+```
+
+Before copying local game assemblies, this should report BepInEx references as OK and game references as missing.
+
 ## 2. First Startup
 
 Expected generated folders:
@@ -143,4 +151,23 @@ Once terminal hook testing is available, verify:
 - `op fingerprint`
 - `op rules`
 - `op perks`
+- `op progression`
+- `op progression grant ship 100`
+- `op progression reset ship`
 - `op handshake`
+
+## 12. Experimental Admin Terminal Hook
+
+Set:
+
+```ini
+[Admin]
+EnableAdminTerminalCommands = true
+AdminCommandPrefix = op
+```
+
+Expected:
+
+- `op help` renders an OverseerProtocol response.
+- Vanilla terminal commands still work.
+- Disabling `EnableAdminTerminalCommands` returns to vanilla behavior.

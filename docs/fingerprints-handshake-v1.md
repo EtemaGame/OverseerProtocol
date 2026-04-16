@@ -40,6 +40,15 @@ The config fingerprint hashes the relevant `.cfg` values:
 
 This is not yet sent over the network. It is ready for a future connection approval / host-client negotiation layer.
 
+`HandshakeCompatibilityService` can compare a host/client handshake pair and returns warnings/errors for:
+
+- OverseerProtocol version mismatch.
+- Active preset mismatch.
+- Preset fingerprint mismatch.
+- Config fingerprint mismatch.
+- Max player rule mismatch.
+- Late join mode mismatch.
+
 ## Admin Commands
 
 The admin command service exposes:

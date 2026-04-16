@@ -22,3 +22,11 @@ public sealed class LobbyHandshakeRules
     public bool RequireMatchingOverseerVersion { get; set; } = true;
     public bool RequireMatchingPreset { get; set; } = true;
 }
+
+public sealed class HandshakeCompatibilityResult
+{
+    public List<string> Warnings { get; set; } = new();
+    public List<string> Errors { get; set; } = new();
+
+    public bool IsCompatible => Errors.Count == 0;
+}

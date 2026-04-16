@@ -1,74 +1,80 @@
-param()
+param(
+    [string]$GamePath = "",
+    [string]$BepInExCorePath = ""
+)
 
-$ProjectDir = "D:\LethalMod\OverseerProtocol"
-$GaleProfile = "D:\GaleGames\lethal-company\profiles\OverseerProtocol-Dev"
-$BepInExDir = "$GaleProfile\BepInEx\core"
-$GameDir = "D:\Steam\steamapps\common\Lethal Company\Lethal Company_Data\Managed" # Cambiar si es diferente
+$ErrorActionPreference = "Stop"
 
-$RefBepInEx = "$ProjectDir\references\bepinex"
-$RefGame = "$ProjectDir\references\game"
+$ProjectDir = Split-Path -Parent $PSScriptRoot
+$RefBepInEx = Join-Path $ProjectDir "references\bepinex"
+$RefGame = Join-Path $ProjectDir "references\game"
 
-if (-not (Test-Path $RefBepInEx)) { New-Item -ItemType Directory -Path $RefBepInEx -Force | Out-Null }
-if (-not (Test-Path $RefGame)) { New-Item -ItemType Directory -Path $RefGame -Force | Out-Null }
+New-Item -ItemType Directory -Force -Path $RefBepInEx | Out-Null
+New-Item -ItemType Directory -Force -Path $RefGame | Out-Null
+
+function Resolve-ManagedPath {
+    param([string]$Root)
+
+    if ([string]::IsNullOrWhiteSpace($Root)) {
+        return ""
+    }
+
+    $candidates = @(
+        (Join-Path $Root "Lethal Company_Data\Managed"),
+        (Join-Path $Root "LethalCompany_Data\Managed"),
+        (Join-Path $Root "Managed"),
+        $Root
+    )
+
+    foreach ($candidate in $candidates) {
+        if (Test-Path (Join-Path $candidate "Assembly-CSharp.dll")) {
+            return $candidate
+        }
+    }
+
+    return ""
+}
+
+function Copy-Dlls {
+    param(
+        [string]$SourceDir,
+        [string]$DestinationDir,
+        [string[]]$Dlls,
+        [string]$Label
+    )
+
+    if ([string]::IsNullOrWhiteSpace($SourceDir) -or !(Test-Path $SourceDir)) {
+        Write-Host "[WARN] $Label source not found: $SourceDir" -ForegroundColor Yellow
+        return
+    }
+
+    Write-Host "Syncing $Label references from $SourceDir..."
+    foreach ($dll in $Dlls) {
+        $source = Join-Path $SourceDir $dll
+        if (Test-Path $source) {
+            Copy-Item $source (Join-Path $DestinationDir $dll) -Force
+            Write-Host "  [OK] $dll" -ForegroundColor Green
+        } else {
+            Write-Host "  [MISS] $dll" -ForegroundColor Yellow
+        }
+    }
+}
 
 $BepInExDlls = @(
     "0Harmony.dll",
-    "BepInEx.dll",
-    "BepInEx.Harmony.dll",
-    "BepInEx.Preloader.dll",
-    "HarmonyXInterop.dll",
-    "MonoMod.RuntimeDetour.dll",
-    "MonoMod.Utils.dll",
-    "Mono.Cecil.dll",
-    "Mono.Cecil.Mdb.dll",
-    "Mono.Cecil.Pdb.dll",
-    "Mono.Cecil.Rocks.dll"
+    "BepInEx.dll"
 )
 
 $GameDlls = @(
     "Assembly-CSharp.dll",
-    "Assembly-CSharp-firstpass.dll",
     "UnityEngine.dll",
     "UnityEngine.CoreModule.dll",
-    "UnityEngine.InputModule.dll",
-    "UnityEngine.UI.dll",
-    "UnityEngine.TextRenderingModule.dll",
-    "Unity.TextMeshPro.dll",
-    "Unity.InputSystem.dll",
-    "Unity.Netcode.Runtime.dll",
-    "Unity.Netcode.Components.dll",
-    "Unity.Collections.dll",
-    "Unity.Mathematics.dll",
-    "Unity.Networking.Transport.dll",
-    "ClientNetworkTransform.dll",
-    "Facepunch.Steamworks.Win64.dll",
-    "Facepunch Transport for Netcode for GameObjects.dll",
-    "DissonanceVoip.dll",
-    "Newtonsoft.Json.dll"
+    "Unity.Netcode.Runtime.dll"
 )
 
-Write-Host "Syncing BepInEx references..."
-foreach ($dll in $BepInExDlls) {
-    if (Test-Path "$BepInExDir\$dll") {
-        Copy-Item "$BepInExDir\$dll" "$RefBepInEx\$dll" -Force
-        Write-Host "  Copied $dll"
-    } else {
-        Write-Host "  [MISSING] $dll from BepInEx" -ForegroundColor Yellow
-    }
-}
+Copy-Dlls $BepInExCorePath $RefBepInEx $BepInExDlls "BepInEx"
 
-if (-not (Test-Path $GameDir)) {
-    Write-Host "WARNING: Game Managed directory not found at $GameDir. Game references could not be copied." -ForegroundColor Yellow
-} else {
-    Write-Host "Syncing Game references..."
-    foreach ($dll in $GameDlls) {
-        if (Test-Path "$GameDir\$dll") {
-            Copy-Item "$GameDir\$dll" "$RefGame\$dll" -Force
-            Write-Host "  Copied $dll"
-        } else {
-            Write-Host "  [MISSING] $dll from Game" -ForegroundColor Yellow
-        }
-    }
-}
+$managedPath = Resolve-ManagedPath $GamePath
+Copy-Dlls $managedPath $RefGame $GameDlls "game"
 
 Write-Host "Sync process finished."

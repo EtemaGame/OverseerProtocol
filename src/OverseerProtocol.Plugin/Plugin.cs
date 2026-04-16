@@ -5,6 +5,7 @@ using OverseerProtocol.Bootstrap;
 using OverseerProtocol.Configuration;
 using OverseerProtocol.Core.Logging;
 using OverseerProtocol.Features;
+using OverseerProtocol.Patches;
 
 namespace OverseerProtocol
 {
@@ -33,6 +34,8 @@ namespace OverseerProtocol
 
             _harmony = new Harmony(ModGuid);
             _harmony.PatchAll();
+            TerminalAdminCommandHook.TryPatch(_harmony);
+            ExperimentalMultiplayerHook.TryPatch(_harmony);
 
             OPLog.Info("Bootstrap", "Harmony inicializado");
 

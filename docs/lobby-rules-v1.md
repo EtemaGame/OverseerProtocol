@@ -1,6 +1,6 @@
 # Lobby Rules V1
 
-Lobby rules are a data contract only in V1. The mod creates and loads the rules file, but it does not yet patch player caps, late join, spectator mode, or network approval.
+Lobby rules are the configuration contract for multiplayer experiments. The mod creates and loads the rules file, and experimental reflection-based scaffolding can consume parts of it when explicitly enabled.
 
 Default path:
 
@@ -58,5 +58,20 @@ The handshake model is defined separately from runtime networking. It is meant t
 - Preset/config fingerprints.
 - Lobby rules that clients must accept.
 - Enabled feature flags.
+
+## Experimental Runtime Status
+
+When `EnableExperimentalMultiplayer` and `EnableExpandedLobbyPatch` are enabled, OverseerProtocol attempts a conservative reflection-based max-player patch using `maxPlayers`-style fields/properties on known singleton objects.
+
+This does not guarantee:
+
+- lobby UI resizing,
+- player object lifecycle correctness,
+- ownership correctness,
+- connection approval,
+- late join state recovery,
+- spectator runtime behavior.
+
+Late join modes are policy-only for now. `Moon` mode is intentionally blocked until moon state recovery exists.
 
 Actual network enforcement should be implemented only after expanded lobby research is done.

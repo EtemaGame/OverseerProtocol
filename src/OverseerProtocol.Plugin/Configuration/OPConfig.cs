@@ -14,15 +14,23 @@ public static class OPConfig
     public static ConfigEntry<bool> EnableProgressionStorage { get; private set; } = null!;
     public static ConfigEntry<bool> EnablePerkCatalog { get; private set; } = null!;
     public static ConfigEntry<bool> EnableLobbyRulesLoading { get; private set; } = null!;
+    public static ConfigEntry<bool> EnableExperimentalMultiplayer { get; private set; } = null!;
+    public static ConfigEntry<bool> EnableExpandedLobbyPatch { get; private set; } = null!;
+    public static ConfigEntry<bool> EnableLateJoinSafeMode { get; private set; } = null!;
+    public static ConfigEntry<bool> EnableSpectatorModeScaffold { get; private set; } = null!;
+    public static ConfigEntry<bool> EnableHandshakeCompatibilityChecks { get; private set; } = null!;
     public static ConfigEntry<bool> EnableRuntimeRulesLoading { get; private set; } = null!;
+    public static ConfigEntry<bool> EnableAdminTerminalCommands { get; private set; } = null!;
     public static ConfigEntry<bool> StrictValidation { get; private set; } = null!;
     public static ConfigEntry<bool> DryRunOverrides { get; private set; } = null!;
     public static ConfigEntry<bool> AbortOnInvalidOverrideBlock { get; private set; } = null!;
     public static ConfigEntry<string> ActivePreset { get; private set; } = null!;
+    public static ConfigEntry<string> AdminCommandPrefix { get; private set; } = null!;
     public static ConfigEntry<string> AggressionProfile { get; private set; } = null!;
     public static ConfigEntry<float> ItemWeightMultiplier { get; private set; } = null!;
     public static ConfigEntry<float> SpawnRarityMultiplier { get; private set; } = null!;
     public static ConfigEntry<float> RoutePriceMultiplier { get; private set; } = null!;
+    public static ConfigEntry<int> ExperimentalMaxPlayers { get; private set; } = null!;
 
     public static string ActivePresetName
     {
@@ -89,11 +97,53 @@ public static class OPConfig
             true,
             "Creates and loads lobby-rules.json for future expanded lobby, late join, and sync enforcement.");
 
+        EnableExperimentalMultiplayer = config.Bind(
+            "ExperimentalMultiplayer",
+            "EnableExperimentalMultiplayer",
+            false,
+            "Master switch for experimental multiplayer scaffolding. Disabled by default.");
+
+        EnableExpandedLobbyPatch = config.Bind(
+            "ExperimentalMultiplayer",
+            "EnableExpandedLobbyPatch",
+            false,
+            "Experimental. Attempts reflection-based max player patching from lobby-rules.json.");
+
+        EnableLateJoinSafeMode = config.Bind(
+            "ExperimentalMultiplayer",
+            "EnableLateJoinSafeMode",
+            false,
+            "Experimental. Enables late-join policy evaluation and diagnostics; does not provide full moon state recovery.");
+
+        EnableSpectatorModeScaffold = config.Bind(
+            "ExperimentalMultiplayer",
+            "EnableSpectatorModeScaffold",
+            false,
+            "Experimental. Enables spectator-mode diagnostics and command scaffolding only.");
+
+        EnableHandshakeCompatibilityChecks = config.Bind(
+            "ExperimentalMultiplayer",
+            "EnableHandshakeCompatibilityChecks",
+            true,
+            "Enables local handshake compatibility diagnostics for future host/client sync.");
+
         EnableRuntimeRulesLoading = config.Bind(
             "RuntimeRules",
             "EnableRuntimeRulesLoading",
             true,
             "Creates and loads runtime-rules.json for future economy, ship, weather, and moon-specific rules.");
+
+        EnableAdminTerminalCommands = config.Bind(
+            "Admin",
+            "EnableAdminTerminalCommands",
+            false,
+            "Experimental. Enables OverseerProtocol admin commands in the in-game Terminal.");
+
+        AdminCommandPrefix = config.Bind(
+            "Admin",
+            "AdminCommandPrefix",
+            "op",
+            "Prefix used by OverseerProtocol admin terminal commands.");
 
         StrictValidation = config.Bind(
             "Validation",
@@ -144,5 +194,13 @@ public static class OPConfig
             new ConfigDescription(
                 "Multiplies every runtime moon route price after JSON moon overrides. 1 keeps current values.",
                 new AcceptableValueRange<float>(0f, 10f)));
+
+        ExperimentalMaxPlayers = config.Bind(
+            "ExperimentalMultiplayer",
+            "ExperimentalMaxPlayers",
+            4,
+            new ConfigDescription(
+                "Upper bound used by experimental expanded lobby patching. lobby-rules.json may lower this value.",
+                new AcceptableValueRange<int>(1, 64)));
     }
 }

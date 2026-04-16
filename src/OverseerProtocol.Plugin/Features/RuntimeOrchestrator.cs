@@ -1,4 +1,5 @@
 using OverseerProtocol.Configuration;
+using OverseerProtocol.Core.Diagnostics;
 using OverseerProtocol.Core.Logging;
 using OverseerProtocol.GameAbstractions.State;
 
@@ -15,8 +16,10 @@ public sealed class RuntimeOrchestrator
 
     public void RunStartupPipeline()
     {
+        var metrics = PhaseMetrics.Start("Runtime", "startup-pipeline");
         OPLog.Info("Runtime", "Running startup pipeline.");
         OPLog.Info("Config", $"Active preset: {OPConfig.ActivePresetName}");
+        LogFingerprints();
 
         LoadDataContracts();
 
@@ -26,38 +29,59 @@ public sealed class RuntimeOrchestrator
         ExportVanillaCatalogs();
         ResetToSnapshot();
         ApplyRuntimeConfiguration();
+        metrics.Complete();
     }
 
     public void ReloadRuntimeConfiguration()
     {
+        var metrics = PhaseMetrics.Start("Runtime", "reload-runtime-configuration");
         OPLog.Info("Runtime", "Reloading runtime configuration from snapshot.");
 
         if (!_snapshot.IsCaptured)
         {
             OPLog.Warning("Runtime", "No runtime snapshot is available. Reload aborted.");
+            metrics.Warning();
+            metrics.Complete();
             return;
         }
 
+        LogFingerprints();
         LoadDataContracts();
         ResetToSnapshot();
         ApplyRuntimeConfiguration();
+        metrics.Complete();
     }
 
     public void ResetToSnapshot()
     {
+        var metrics = PhaseMetrics.Start("Runtime", "reset-to-snapshot");
         _snapshot.Restore();
+        metrics.Complete();
     }
 
     public void ExportVanillaCatalogs()
     {
+        var metrics = PhaseMetrics.Start("Runtime", "export-vanilla-catalogs");
         if (OPConfig.EnableDataExport.Value)
         {
             DataExportFeature.RunInitialExport();
+            metrics.Applied();
         }
         else
         {
             OPLog.Info("Export", "Data export disabled by config.");
+            metrics.Skipped();
         }
+
+        metrics.Complete();
+    }
+
+    private static void LogFingerprints()
+    {
+        var fingerprints = new FingerprintFeature().ComputeCurrent();
+        OPLog.Info("Fingerprint", $"Active preset: {fingerprints.ActivePreset}");
+        OPLog.Info("Fingerprint", $"Preset fingerprint: {fingerprints.PresetFingerprint}");
+        OPLog.Info("Fingerprint", $"Config fingerprint: {fingerprints.ConfigFingerprint}");
     }
 
     private static void LoadDataContracts()
@@ -100,6 +124,16 @@ public sealed class RuntimeOrchestrator
         else
         {
             OPLog.Info("RuntimeRules", "Runtime rules loading disabled by config.");
+        }
+
+        if (OPConfig.EnableExperimentalMultiplayer.Value)
+        {
+            var multiplayerFeature = new ExperimentalMultiplayerFeature();
+            multiplayerFeature.Apply();
+        }
+        else
+        {
+            OPLog.Info("Multiplayer", "Experimental multiplayer loading disabled by config.");
         }
     }
 
@@ -156,6 +190,17 @@ public sealed class RuntimeOrchestrator
         else
         {
             OPLog.Info("Overrides", "Runtime multipliers disabled by config.");
+        }
+
+        if (OPConfig.EnableRuntimeRulesLoading.Value && !OPConfig.DryRunOverrides.Value)
+        {
+            var runtimeRulesFeature = new RuntimeRulesFeature();
+            var runtimeRules = runtimeRulesFeature.LoadOrCreate();
+            runtimeRulesFeature.Apply(runtimeRules);
+        }
+        else if (OPConfig.DryRunOverrides.Value)
+        {
+            OPLog.Info("RuntimeRules", "Dry-run enabled. Runtime rules were loaded but not applied.");
         }
     }
 }
