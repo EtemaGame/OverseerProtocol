@@ -23,6 +23,12 @@ public static class OPPaths
     public static string EnemyExportRoot =>
         Path.Combine(ExportRoot, "enemies");
 
+    public static string OverridesRoot =>
+        Path.Combine(DataRoot, "overrides");
+
+    public static string ItemOverridePath =>
+        Path.Combine(OverridesRoot, "items.override.json");
+
     public static void EnsureDirectories()
     {
         Directory.CreateDirectory(PluginRoot);
@@ -31,5 +37,6 @@ public static class OPPaths
         Directory.CreateDirectory(ItemExportRoot);
         Directory.CreateDirectory(MoonExportRoot);
         Directory.CreateDirectory(EnemyExportRoot);
+        Directory.CreateDirectory(OverridesRoot);
     }
 }
