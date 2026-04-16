@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.IO;
 using OverseerProtocol.Core.Logging;
 using OverseerProtocol.Core.Paths;
 using OverseerProtocol.Core.Serialization;
@@ -17,7 +16,7 @@ namespace OverseerProtocol.Export
                 return;
             }
 
-            var path = Path.Combine(OPPaths.MoonExportRoot, "moons.json");
+            var path = OPPaths.MoonExportPath;
             JsonFileWriter.Write(path, moons);
             OPLog.Info("Export", $"Desplegado catálogo de lunas ({moons.Count} registros) en {path}");
         }

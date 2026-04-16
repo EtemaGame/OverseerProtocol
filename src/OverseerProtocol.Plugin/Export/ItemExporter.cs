@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.IO;
 using OverseerProtocol.Core.Logging;
 using OverseerProtocol.Core.Paths;
 using OverseerProtocol.Core.Serialization;
@@ -17,7 +16,7 @@ namespace OverseerProtocol.Export
                 return;
             }
 
-            var path = Path.Combine(OPPaths.ItemExportRoot, "items.json");
+            var path = OPPaths.ItemExportPath;
             JsonFileWriter.Write(path, items);
             OPLog.Info("Export", $"Desplegado catálogo de items ({items.Count} registros) en {path}");
         }

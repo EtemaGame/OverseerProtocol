@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.IO;
 using OverseerProtocol.Core.Logging;
 using OverseerProtocol.Core.Paths;
 using OverseerProtocol.Core.Serialization;
@@ -17,7 +16,7 @@ namespace OverseerProtocol.Export
                 return;
             }
 
-            var path = Path.Combine(OPPaths.ExportRoot, "spawns", "moon-spawn-profiles.json");
+            var path = OPPaths.SpawnProfileExportPath;
             JsonFileWriter.Write(path, profiles);
             OPLog.Info("Export", $"Desplegados perfiles de spawn ({profiles.Count} registros) en {path}");
         }

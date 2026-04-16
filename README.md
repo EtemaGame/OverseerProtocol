@@ -1,36 +1,40 @@
 # OverseerProtocol
 
-**OverseerProtocol** is a high-level integration and monitoring layer for **Lethal Company**. It acts as a digital "Overseer" that standardizes, monitors, and exposes the game's internal data for protocol-based management and deep analysis.
+**OverseerProtocol** is a systemic, data-driven framework for **Lethal Company** designed for stability, deep observability, and maintainable game reconfiguration.
 
-## 👁️ What is OverseerProtocol?
+Inspired by the legacy of AdvancedCompany but built without technical debt, it focuses on the mantra: **Observe &rarr; Organize &rarr; Override**.
 
-This mod serves as a sophisticated bridge between the chaotic runtime environment of the game and a structured data layer. It doesn't just "change" the game; it **observes** and **organizes** it.
+## 👁️ The Vision
 
-At its core, OverseerProtocol is designed to provide a "Single Source of Truth" for everything happening within the game's catalogs and active sessions.
+OverseerProtocol acts as a sophisticated bridge between the chaotic runtime of Lethal Company and a structured data layer. It provides a "Single Source of Truth" for game mechanics, allowing for precise monitoring and controlled modifications without polluting the base game state.
 
-## 🛰️ Key Functions
+## 🏗️ Technical Pillars
 
-### 1. Data Standardization (The Catalog Reader)
+### 1. Unified Identity (Observe)
+We deep-scan the game's internal registries (Items, Moons, Enemies, Spawns) and normalize them into a predictable format. Every entity is assigned a stable internal `Id` used for matching, ensuring consistency across modded environments.
 
-OverseerProtocol deep-scans the game's internal registries (Items, Moons, Enemies, Spawns) and converts them into a clean, human-readable, and predictable format. This ensures that every piece of scrap, every creature, and every celestial body is accounted for under a unified protocol.
+### 2. Digital Export (Organize)
+Snapshots of the game's vanilla state are exported as structured JSON. This "vanilla photo" allows for:
+- **Game Analysis**: Deep insight into spawn rates and economic profiles.
+- **Contract Documentation**: Clear visibility into what the game exposes to modders.
 
-### 2. Digital Export & Monitoring
+### 3. Controlled Overrides (Override)
+Once the state is organized, OverseerProtocol allows for runtime modifications through an external override layer.
+- **Item Overrides**: Modify weights, store prices, and properties safely.
+- **Spawn Overrides**: Reconfigure enemy pools and rarities per moon.
+- **Safety First**: Every modification includes strict validation to prevent crashes.
 
-The mod can capture snapshots of the game's state and export them as structured data (JSON). This is essential for:
+## 🚀 Development Status (Foundation V1)
 
-- **Game Analysis**: Understanding spawn rates, item values, and risk profiles.
-- **External Tools**: Connecting Lethal Company data to external dashboards, web applications, or monitoring software.
-- **Protocol Enforcement**: Providing the foundational data needed to enforce specific rules or "protocols" across different modded environments.
-
-### 3. Modular Lifecycle Synchronization
-
-Unlike traditional mods that might fail due to race conditions, OverseerProtocol is built with a sophisticated lifecycle management system. It waits for the game's internal "Start of Round" sequence to ensure that any data it reads or exports is **accurate, fully initialized, and reliable**.
-
-## 🏗️ The Pillars of the Protocol
-
-- **Visibility**: Making the "invisible" internal catalogs visible and accessible.
-- **Consistency**: Ensuring data is presented in a standardized way, regardless of how many other mods are installed.
-- **Stability**: Using advanced Harmony integration to maintain a zero-impact footprint on the game's performance while providing deep insight.
+- [x] **Infrastructure**: BepInEx loading, Harmony patching, stable lifecycle triggers.
+- [x] **Data Layer**: Clean exports for items, moons, and enemies.
+- [x] **Item Overrides (V1)**: Runtime modification of weight and store prices.
+- [x] **Spawn Overrides (V1)**: Pool replacement and rarity tuning per moon.
+- [x] **Validation Layer**: Cross-reference resolution and safety checks.
+- [x] **Hybrid Config**: `.cfg` for simple toggles + JSON for complex profiles.
+- [x] **Moon Economy V2**: Route price resolution and raw TerminalNode economy export.
+- [x] **Presets V1**: Built-in Vanilla Plus and Hardcore preset manifests with safe multipliers.
+- [x] **Semantic Difficulty V1**: Aggression profiles layered over spawn rarity multipliers.
 
 ---
 

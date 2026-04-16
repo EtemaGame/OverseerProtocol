@@ -40,6 +40,11 @@ public static class DataExportFeature
         
         moonExporter.ExportAll(moons);
 
+        // Moon Economy (raw TerminalNode mapping)
+        var moonEconomyExporter = new MoonEconomyExporter();
+        var moonEconomyProfiles = priceResolver.BuildMoonEconomyProfiles(moons);
+        moonEconomyExporter.ExportAll(moonEconomyProfiles);
+
         // Enemies
         var enemyReader = new EnemyCatalogReader();
         var enemyExporter = new EnemyExporter();

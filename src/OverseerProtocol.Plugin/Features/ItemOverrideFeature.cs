@@ -15,9 +15,9 @@ public sealed class ItemOverrideFeature
         _applier = new ItemOverrideApplier();
     }
 
-    public void ApplyOverrides()
+    public void ApplyOverrides(string presetName)
     {
-        var path = OPPaths.ItemOverridePath;
+        var path = OPPaths.GetItemOverridePath(presetName);
         
         OPLog.Info("Overrides", $"Loading item overrides from: {path}");
         

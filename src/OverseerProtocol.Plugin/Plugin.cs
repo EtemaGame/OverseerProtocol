@@ -2,7 +2,9 @@ using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
 using OverseerProtocol.Bootstrap;
+using OverseerProtocol.Configuration;
 using OverseerProtocol.Core.Logging;
+using OverseerProtocol.Features;
 
 namespace OverseerProtocol
 {
@@ -25,6 +27,8 @@ namespace OverseerProtocol
             Log = Logger;
             
             Bootstrapper.Initialize(Logger);
+            OPConfig.Bind(Config);
+            PresetBootstrapFeature.EnsureBuiltInPresets();
             OPLog.Info("Bootstrap", $"{ModName} cargando core phase...");
 
             _harmony = new Harmony(ModGuid);
