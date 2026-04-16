@@ -31,8 +31,6 @@ Regla guia:
 - Paths organizados para exports, overrides, presets, saves, rules y definitions.
 - Docs tecnicas por subsistema.
 - Node local para validacion JSON de samples.
-- BepInEx/Harmony references descargadas desde release oficial.
-- Helper para copiar game assemblies desde una instalacion local legitima.
 
 ### Contratos Data-Only Listos Para Integrar
 
@@ -41,8 +39,7 @@ Regla guia:
 - `progression.json`: progreso player/ship.
 - `perks.json`: catalogo seed de perks player/ship.
 - `ProtocolHandshakeDefinition`: fingerprints, feature flags y reglas host/client.
-- `AdminCommandService`: comandos listos y hook experimental de Terminal apagado por defecto.
-- `RuntimeStateSyncSnapshotDefinition`: modelo reservado para sync futuro.
+- `AdminCommandService`: comandos listos, pendiente hook real a Terminal.
 
 ## Fases
 
@@ -191,16 +188,15 @@ Gate C:
 
 - No comenzar expanded lobby sin presets estables, progression/perks sin corrupcion de saves y handshake/fingerprint funcionando.
 
-### Fase 8 - Expanded Lobby Experimental Scaffold
+### Fase 8 - Expanded Lobby Research Branch
 
 Objetivo: investigar lobby grande sin contaminar el nucleo estable.
 
 Tareas:
 
-- Mantener todo detras de `[ExperimentalMultiplayer]`.
+- Rama experimental separada.
 - Mapear player caps, lobby creation, UI, ownership y player lifecycle.
-- Usar reflection scaffold para detectar/patchar campos max-player conocidos.
-- Prototipo >4 players sin prometer UI, ownership ni late join on moon.
+- Prototipo >4 players sin late join on moon.
 - Feature flag fuerte, apagado por default.
 
 Resultado:
@@ -259,31 +255,28 @@ Resultado:
 | Runtime rules | In Progress / Partially Active |
 | Admin commands | In Progress / Service Ready |
 | Terminal hook | Experimental / Disabled By Default |
-| Progression store | In Progress / Data-Only + Debug Commands |
+| Progression store | Planned / Data-Only |
 | Perk catalog | Planned / Data-Only |
 | Perk appliers | Planned |
-| Lobby rules | In Progress / Data-Only + Experimental Consumers |
+| Lobby rules | Planned / Data-Only |
 | Fingerprints/handshake | In Progress / Comparison Ready |
 | Host/client sync | Experimental / Contract + Diagnostics |
 | Expanded lobby | Experimental / Reflection Scaffold |
 | Late join | Experimental / Policy Scaffold |
 | Spectator | Experimental / Diagnostics Scaffold |
-| Runtime state sync | Experimental / Reserved Snapshot Model |
-| Reference setup | In Progress / BepInEx Ready, Game DLLs Pending |
 | Cosmetics/clothing/hotbar rework | Deferred |
 
 ## Non-Goals Por Ahora
 
-- No soporte productivo de 32 players todavia.
-- No late join on moon funcional todavia.
-- No spectator mode funcional todavia.
+- No 32 players todavia.
+- No late join on moon todavia.
+- No spectator mode todavia.
 - No portable terminal rica todavia.
 - No clothing/cosmetics/modeling.
 - No hotbar rework profundo.
 - No sync framework general para terceros.
 - No port 1:1 de AdvancedCompany.
 - No hooks delicados sin feature flag de apagado.
-- No descargar game assemblies propietarios desde mirrors de terceros.
 
 ## Pruebas Y Aceptacion
 
@@ -292,8 +285,6 @@ Resultado:
 - `git diff --check`.
 - Validacion JSON con Node local.
 - Revision estatica de paths/config/docs.
-- BepInEx/Harmony refs presentes.
-- Game refs copiadas desde instalacion local legitima.
 - Build cuando `dotnet` este disponible.
 
 ### Con Runtime
@@ -308,9 +299,6 @@ Resultado:
 - Terminal hook no rompe comandos vanilla.
 - Fingerprints cambian al modificar config/preset.
 - Progression/perks no corrompen saves.
-- Experimental multiplayer no-op seguro con flags apagadas.
-- Expanded lobby reflection scaffold loguea claramente que encontro y que no encontro.
-- LateJoinMode `Moon` queda bloqueado por politica hasta existir recovery.
 
 ## Supuestos Oficiales
 
