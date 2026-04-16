@@ -10,9 +10,7 @@ public class Inspector
         {
             var assembly = Assembly.LoadFrom("D:\\LethalMod\\OverseerProtocol\\references\\game\\Assembly-CSharp.dll");
             
-            InspectType(assembly, "Terminal");
-            InspectType(assembly, "TerminalNode");
-            InspectType(assembly, "CompatibleNoun");
+            InspectType(assembly, "Item");
         }
         catch (Exception ex)
         {

@@ -11,15 +11,19 @@ At its core, OverseerProtocol is designed to provide a "Single Source of Truth" 
 ## 🛰️ Key Functions
 
 ### 1. Data Standardization (The Catalog Reader)
+
 OverseerProtocol deep-scans the game's internal registries (Items, Moons, Enemies, Spawns) and converts them into a clean, human-readable, and predictable format. This ensures that every piece of scrap, every creature, and every celestial body is accounted for under a unified protocol.
 
 ### 2. Digital Export & Monitoring
+
 The mod can capture snapshots of the game's state and export them as structured data (JSON). This is essential for:
+
 - **Game Analysis**: Understanding spawn rates, item values, and risk profiles.
 - **External Tools**: Connecting Lethal Company data to external dashboards, web applications, or monitoring software.
 - **Protocol Enforcement**: Providing the foundational data needed to enforce specific rules or "protocols" across different modded environments.
 
 ### 3. Modular Lifecycle Synchronization
+
 Unlike traditional mods that might fail due to race conditions, OverseerProtocol is built with a sophisticated lifecycle management system. It waits for the game's internal "Start of Round" sequence to ensure that any data it reads or exports is **accurate, fully initialized, and reliable**.
 
 ## 🏗️ The Pillars of the Protocol
@@ -34,7 +38,4 @@ Unlike traditional mods that might fail due to race conditions, OverseerProtocol
 
 ---
 
-## 📜 Repository Information
-This repository contains the source code for the modular assembly framework. 
-- Legal Note: This project does not distribute game assets or copyrighted DLLs. Developers should use the provided synchronization tools in the `tools/` directory to prepare their local environment.
 - License: MIT License.
