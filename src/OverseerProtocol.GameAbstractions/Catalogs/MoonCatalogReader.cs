@@ -26,8 +26,9 @@ public class MoonCatalogReader
 
         OPLog.Info("Moons", $"Found {levels.Length} levels in StartOfRound catalog.");
 
-        foreach (var level in levels)
+        for (var levelIndex = 0; levelIndex < levels.Length; levelIndex++)
         {
+            var level = levels[levelIndex];
             if (level == null) continue;
 
             // Mapping verified against Assembly-CSharp.dll
@@ -36,6 +37,7 @@ public class MoonCatalogReader
                 Id = level.name, // ScriptableObject name (e.g. ExperimentationLevel)
                 InternalName = level.PlanetName, // e.g. "41 Experimentation"
                 DisplayName = level.PlanetName, 
+                LevelIndex = levelIndex,
                 RiskLevel = ParseRiskLevel(level.riskLevel)
             };
 

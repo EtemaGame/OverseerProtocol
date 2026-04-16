@@ -17,7 +17,8 @@ public sealed class PresetFeature
         var settings = new PresetRuntimeSettings
         {
             ItemWeightMultiplier = OPConfig.ItemWeightMultiplier.Value,
-            SpawnRarityMultiplier = OPConfig.SpawnRarityMultiplier.Value
+            SpawnRarityMultiplier = OPConfig.SpawnRarityMultiplier.Value,
+            RoutePriceMultiplier = OPConfig.RoutePriceMultiplier.Value
         };
 
         if (string.Equals(OPConfig.ActivePresetName, OPConfig.DefaultPreset, StringComparison.OrdinalIgnoreCase))
@@ -34,6 +35,9 @@ public sealed class PresetFeature
 
         if (preset.SpawnRarityMultiplier.HasValue && IsDefaultMultiplier(OPConfig.SpawnRarityMultiplier.Value))
             settings.SpawnRarityMultiplier = preset.SpawnRarityMultiplier.Value;
+
+        if (preset.RoutePriceMultiplier.HasValue && IsDefaultMultiplier(OPConfig.RoutePriceMultiplier.Value))
+            settings.RoutePriceMultiplier = preset.RoutePriceMultiplier.Value;
 
         return settings;
     }
@@ -63,4 +67,5 @@ public sealed class PresetRuntimeSettings
 {
     public float ItemWeightMultiplier { get; set; }
     public float SpawnRarityMultiplier { get; set; }
+    public float RoutePriceMultiplier { get; set; }
 }

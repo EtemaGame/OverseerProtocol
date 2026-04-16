@@ -94,10 +94,11 @@ public class MoonRoutePriceResolver
         if (moons == null || moons.Count == 0)
             return profiles;
 
-        for (var levelIndex = 0; levelIndex < moons.Count; levelIndex++)
+        for (var i = 0; i < moons.Count; i++)
         {
-            var moon = moons[levelIndex];
+            var moon = moons[i];
             if (moon == null) continue;
+            var levelIndex = moon.LevelIndex;
 
             var routeNodes = GetRouteNodes(levelIndex);
             profiles.Add(new MoonEconomyProfile

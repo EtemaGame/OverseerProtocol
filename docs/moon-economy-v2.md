@@ -22,6 +22,7 @@ Mapping contract:
 - `TerminalNode.itemCost`: raw terminal route price.
 - `TerminalNode.name`: exported as `terminalNodeId`.
 - `MoonDefinition.id`: `SelectableLevel.name` at the same level index.
+- `MoonDefinition.levelIndex`: Explicit exported index for the level in `StartOfRound.Instance.levels`.
 
 If multiple route nodes target the same level index, OverseerProtocol keeps all raw candidates in `routeNodes` and resolves `routePrice` by preferring a non-zero `itemCost`.
 

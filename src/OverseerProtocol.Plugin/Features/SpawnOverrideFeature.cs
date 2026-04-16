@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using OverseerProtocol.Configuration;
 using OverseerProtocol.Core.Logging;
 using OverseerProtocol.Core.Paths;
 using OverseerProtocol.Core.Serialization;
@@ -44,13 +45,23 @@ public sealed class SpawnOverrideFeature
         var validationResult = _validator.Validate(collection, references);
         validationResult.Report.WriteToLog("Validation");
 
-        if (!validationResult.CanApply)
+        if (!validationResult.CanApplyWithStrictMode(OPConfig.StrictValidation.Value))
         {
-            OPLog.Warning("Validation", "Spawn override collection failed critical validation. Application aborted.");
+            var reason = OPConfig.StrictValidation.Value && validationResult.Report.WarningCount > 0
+                ? "strict validation is enabled and warnings were reported"
+                : "critical validation errors were reported";
+
+            OPLog.Warning("Validation", $"Spawn override collection was not applied because {reason}.");
             return;
         }
 
         // 4. Application
+        if (OPConfig.DryRunOverrides.Value)
+        {
+            OPLog.Info("Overrides", $"Dry-run enabled. {validationResult.Collection.Overrides.Count} moon spawn overrides validated; no runtime spawn mutations applied.");
+            return;
+        }
+
         _applier.Apply(validationResult.Collection);
     }
 

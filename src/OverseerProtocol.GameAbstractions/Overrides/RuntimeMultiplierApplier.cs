@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using OverseerProtocol.Core.Logging;
+using UnityEngine;
 
 namespace OverseerProtocol.GameAbstractions.Overrides;
 
@@ -9,12 +10,15 @@ public sealed class RuntimeMultiplierApplier
     private const float NoOpMultiplier = 1f;
     private const float MultiplierEpsilon = 0.0001f;
 
-    public void Apply(float itemWeightMultiplier, float spawnRarityMultiplier)
+    public void Apply(float itemWeightMultiplier, float spawnRarityMultiplier, float routePriceMultiplier)
     {
         var normalizedItemWeightMultiplier = NormalizeMultiplier(itemWeightMultiplier, "ItemWeightMultiplier");
         var normalizedSpawnRarityMultiplier = NormalizeMultiplier(spawnRarityMultiplier, "SpawnRarityMultiplier");
+        var normalizedRoutePriceMultiplier = NormalizeMultiplier(routePriceMultiplier, "RoutePriceMultiplier");
 
-        if (IsNoOp(normalizedItemWeightMultiplier) && IsNoOp(normalizedSpawnRarityMultiplier))
+        if (IsNoOp(normalizedItemWeightMultiplier) &&
+            IsNoOp(normalizedSpawnRarityMultiplier) &&
+            IsNoOp(normalizedRoutePriceMultiplier))
         {
             OPLog.Info("Overrides", "Runtime multipliers are all 1. No multiplier changes applied.");
             return;
@@ -25,6 +29,9 @@ public sealed class RuntimeMultiplierApplier
 
         if (!IsNoOp(normalizedSpawnRarityMultiplier))
             ApplySpawnRarityMultiplier(normalizedSpawnRarityMultiplier);
+
+        if (!IsNoOp(normalizedRoutePriceMultiplier))
+            ApplyRoutePriceMultiplier(normalizedRoutePriceMultiplier);
     }
 
     private void ApplyItemWeightMultiplier(float multiplier)
@@ -85,6 +92,29 @@ public sealed class RuntimeMultiplierApplier
         }
 
         return appliedCount;
+    }
+
+    private void ApplyRoutePriceMultiplier(float multiplier)
+    {
+        var routeNodes = Resources.FindObjectsOfTypeAll<TerminalNode>();
+        if (routeNodes == null || routeNodes.Length == 0)
+        {
+            OPLog.Warning("Overrides", "No TerminalNode route entries available. Skipping route price multiplier.");
+            return;
+        }
+
+        var appliedCount = 0;
+        foreach (var node in routeNodes)
+        {
+            if (node == null || node.buyRerouteToMoon == -1)
+                continue;
+
+            var scaled = (int)Math.Round(node.itemCost * multiplier, MidpointRounding.AwayFromZero);
+            node.itemCost = Math.Max(0, scaled);
+            appliedCount++;
+        }
+
+        OPLog.Info("Overrides", $"Applied route price multiplier {multiplier:0.###} to {appliedCount} terminal route nodes.");
     }
 
     private static int ClampRarity(int value)

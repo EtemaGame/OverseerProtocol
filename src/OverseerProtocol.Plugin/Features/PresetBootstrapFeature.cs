@@ -3,6 +3,7 @@ using System.IO;
 using OverseerProtocol.Core.Logging;
 using OverseerProtocol.Core.Paths;
 using OverseerProtocol.Core.Serialization;
+using OverseerProtocol.Data.Models;
 using OverseerProtocol.Data.Models.Presets;
 
 namespace OverseerProtocol.Features;
@@ -18,6 +19,7 @@ public static class PresetBootstrapFeature
             Description = "A light-touch profile that nudges spawn pressure without changing entity identities.",
             ItemWeightMultiplier = 1f,
             SpawnRarityMultiplier = 1.1f,
+            RoutePriceMultiplier = 1f,
             Notes = new List<string>
             {
                 "Uses runtime multipliers only.",
@@ -32,10 +34,56 @@ public static class PresetBootstrapFeature
             Description = "A higher-pressure profile that increases item burden and enemy spawn rarity.",
             ItemWeightMultiplier = 1.1f,
             SpawnRarityMultiplier = 1.35f,
+            RoutePriceMultiplier = 1.1f,
             Notes = new List<string>
             {
                 "Uses runtime multipliers only for safe cross-modpack behavior.",
                 "JSON overrides can be layered into the preset folder for advanced tuning."
+            }
+        });
+
+        EnsurePreset(new PresetDefinition
+        {
+            Id = "economy-chaos",
+            DisplayName = "Economy Chaos",
+            Description = "A preset shell for aggressive moon economy and route price experiments.",
+            ItemWeightMultiplier = 1f,
+            SpawnRarityMultiplier = 1f,
+            RoutePriceMultiplier = 1.5f,
+            Notes = new List<string>
+            {
+                "Intentionally ships without moon IDs; add moons.override.json entries after exporting catalogs.",
+                "Designed as a safe starting point for host-side economy tuning."
+            }
+        });
+
+        EnsurePreset(new PresetDefinition
+        {
+            Id = "outside-nightmare",
+            DisplayName = "Outside Nightmare",
+            Description = "A preset shell for outside and daytime spawn pressure experiments.",
+            ItemWeightMultiplier = 1f,
+            SpawnRarityMultiplier = 1.25f,
+            RoutePriceMultiplier = 1f,
+            Notes = new List<string>
+            {
+                "Uses a modest global spawn rarity multiplier until explicit spawn pools are added.",
+                "Add spawns.override.json entries after exporting moon and enemy catalogs."
+            }
+        });
+
+        EnsurePreset(new PresetDefinition
+        {
+            Id = "scrap-heaven",
+            DisplayName = "Scrap Heaven",
+            Description = "A preset shell for higher-value scrap and lighter carry experiments.",
+            ItemWeightMultiplier = 0.9f,
+            SpawnRarityMultiplier = 1f,
+            RoutePriceMultiplier = 0.9f,
+            Notes = new List<string>
+            {
+                "Uses a light item weight multiplier only.",
+                "Add items.override.json entries after exporting item catalogs."
             }
         });
     }
@@ -50,9 +98,28 @@ public static class PresetBootstrapFeature
         Directory.CreateDirectory(overridesRoot);
 
         if (File.Exists(manifestPath))
+        {
+            EnsureOverrideTemplates(preset.Id);
             return;
+        }
 
         JsonFileWriter.Write(manifestPath, preset);
+        EnsureOverrideTemplates(preset.Id);
         OPLog.Info("Presets", $"Seeded built-in preset '{preset.Id}' at {manifestPath}");
+    }
+
+    private static void EnsureOverrideTemplates(string presetId)
+    {
+        EnsureTemplate(OPPaths.GetItemOverridePath(presetId), new ItemOverrideCollection());
+        EnsureTemplate(OPPaths.GetSpawnOverridePath(presetId), new SpawnOverrideCollection());
+        EnsureTemplate(OPPaths.GetMoonOverridePath(presetId), new MoonOverrideCollection());
+    }
+
+    private static void EnsureTemplate<T>(string path, T template)
+    {
+        if (File.Exists(path))
+            return;
+
+        JsonFileWriter.Write(path, template);
     }
 }

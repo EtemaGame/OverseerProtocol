@@ -29,12 +29,9 @@ public static class DataExportFeature
         // Enrich moons with resolved prices
         if (StartOfRound.Instance != null && StartOfRound.Instance.levels != null)
         {
-            var levels = StartOfRound.Instance.levels;
             for (int i = 0; i < moons.Count; i++)
             {
-                // Note: We assume moons were read in the same order as StartOfRound.Instance.levels
-                // This is true in the current MoonCatalogReader implementation.
-                moons[i].RoutePrice = priceResolver.GetRoutePrice(i);
+                moons[i].RoutePrice = priceResolver.GetRoutePrice(moons[i].LevelIndex);
             }
         }
         

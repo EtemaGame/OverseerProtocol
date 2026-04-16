@@ -11,3 +11,4 @@ references/
 *.binlog
 preprocessed.xml
 .DS_Store
+node-v24.14.1-win-x64/

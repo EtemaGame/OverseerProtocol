@@ -1,4 +1,6 @@
+using System;
 using System.IO;
+using OverseerProtocol.Core.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
@@ -24,8 +26,9 @@ public static class JsonFileReader
             var json = File.ReadAllText(path);
             return JsonConvert.DeserializeObject<T>(json, Settings);
         }
-        catch
+        catch (Exception ex)
         {
+            OPLog.Warning("Json", $"Failed to read JSON file '{path}': {ex.Message}");
             return default;
         }
     }
