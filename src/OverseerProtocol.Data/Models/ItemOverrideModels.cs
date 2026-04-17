@@ -17,4 +17,6 @@ public sealed class ItemOverrideDefinition
     public int? StorePrice { get; set; }
     public int? MinValue { get; set; }
     public int? MaxValue { get; set; }
+    public bool? IsScrap { get; set; }
+    public bool? RequiresBattery { get; set; }
 }

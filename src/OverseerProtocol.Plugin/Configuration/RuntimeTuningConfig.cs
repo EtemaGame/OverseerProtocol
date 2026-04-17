@@ -37,42 +37,34 @@ public sealed class RuntimeTuningConfig
                 continue;
 
             var id = item.name;
-            var entry = _config.Bind(
-                "Items",
-                id,
-                BuildObservedItemLine(item),
-                "Entity item tuning. Set enabled=true to apply active fields. Active: value, weight, store, storePrice, minValue, maxValue. Reserved: battery.");
+            var section = "Items." + id;
+            var inStore = IsStoreItem(item);
 
-            var fields = EntityLine.Parse(entry.Value);
-            if (!fields.Enabled)
+            var enabled = BindBool(section, "Enabled", false, "Enable edits for this item. When false, the values below are only a runtime catalog.");
+            BindString(section, "DisplayName", item.itemName ?? id, "Observed display name. Informational.");
+            var value = BindInt(section, "Value", item.creditsWorth, "Item creditsWorth / store price base value.", 0, 99999);
+            var weight = BindFloat(section, "Weight", item.weight, "Item weight multiplier value used by Lethal Company.", 0f, 100f);
+            var isScrap = BindBool(section, "IsScrap", item.isScrap, "Whether the item is considered scrap.");
+            var addToStore = BindBool(section, "InStore", inStore, "Whether the item should be present in the Terminal store.");
+            var storePrice = BindInt(section, "StorePrice", item.creditsWorth, "Price used when the item is in the Terminal store.", 0, 99999);
+            var requiresBattery = BindBool(section, "RequiresBattery", item.requiresBattery, "Whether this item uses battery charge.");
+            var minValue = BindInt(section, "MinScrapValue", item.minValue, "Minimum randomized scrap value.", 0, 99999);
+            var maxValue = BindInt(section, "MaxScrapValue", item.maxValue, "Maximum randomized scrap value.", 0, 99999);
+
+            if (!enabled.Value)
                 continue;
-
-            WarnReservedItemFields(id, fields);
-
-            var creditsWorth = fields.GetInt("value");
-            var storePrice = fields.GetInt("storePrice");
-            var weight = fields.GetFloat("weight");
-            var addToStore = fields.GetBool("store");
-            var minValue = fields.GetInt("minValue");
-            var maxValue = fields.GetInt("maxValue");
-            if (!creditsWorth.HasValue && storePrice.HasValue)
-                creditsWorth = storePrice;
-
-            if (!creditsWorth.HasValue && !weight.HasValue && addToStore != true && !minValue.HasValue && !maxValue.HasValue)
-            {
-                OPLog.Info("Config", $"Item '{id}' is enabled but has no active value/weight/store/range fields.");
-                continue;
-            }
 
             collection.Overrides.Add(new ItemOverrideDefinition
             {
                 Id = id,
-                CreditsWorth = creditsWorth,
-                Weight = weight,
-                AddToStore = addToStore,
-                StorePrice = storePrice,
-                MinValue = minValue,
-                MaxValue = maxValue
+                CreditsWorth = value.Value,
+                Weight = weight.Value,
+                IsScrap = isScrap.Value,
+                AddToStore = addToStore.Value,
+                StorePrice = storePrice.Value,
+                RequiresBattery = requiresBattery.Value,
+                MinValue = minValue.Value,
+                MaxValue = maxValue.Value
             });
         }
 
@@ -97,48 +89,35 @@ public sealed class RuntimeTuningConfig
                 continue;
 
             var id = level.name;
-            var entry = _config.Bind(
-                "Moons",
-                id,
-                BuildObservedMoonLine(level, levelIndex),
-                "Entity moon tuning. Set enabled=true to apply active fields. Active: price, tier/riskLabel, riskLevel, description, minScrap, maxScrap. Reserved: interior.");
+            var section = "Moons." + id;
+            var enabled = BindBool(section, "Enabled", false, "Enable edits for this moon. When false, the values below are only a runtime catalog.");
+            BindString(section, "DisplayName", level.PlanetName ?? id, "Observed moon display name. Informational.");
+            var price = BindInt(section, "RoutePrice", ResolveRoutePrice(levelIndex), "Terminal route price.", 0, 99999);
+            var tier = BindString(section, "Tier", level.riskLevel ?? "None", "Risk label shown by the game. Examples: D, C, B, A, S, S+.");
+            var riskLevel = BindInt(section, "RiskLevel", ParseRiskLevel(level.riskLevel), "Numeric helper for vanilla labels: 0=None, 1=D, 2=C, 3=B, 4=A, 5=S.", 0, 5);
+            var description = BindString(section, "Description", TryReadStringMember(level, "LevelDescription", "levelDescription", "sceneName") ?? "", "Moon description text.");
+            var minScrap = BindInt(section, "MinScrap", ReadIntMember(level, "minScrap"), "Minimum scrap items for this moon.", 0, 999);
+            var maxScrap = BindInt(section, "MaxScrap", ReadIntMember(level, "maxScrap"), "Maximum scrap items for this moon.", 0, 999);
+            BindString(section, "Interior", "reserved", "Reserved until dungeon-flow hooks are verified.");
 
-            var fields = EntityLine.Parse(entry.Value);
-            if (!fields.Enabled)
+            BindEnemyPool(section, "InsideEnemies", level.Enemies);
+            BindEnemyPool(section, "OutsideEnemies", level.OutsideEnemies);
+            BindEnemyPool(section, "DaytimeEnemies", level.DaytimeEnemies);
+            BindBool(section, "RouteMultiplierEnabled", false, "Enable the per-moon route multiplier below.");
+            BindFloat(section, "RouteMultiplier", 1f, "Additional route price multiplier for this moon.", 0f, 10f);
+
+            if (!enabled.Value)
                 continue;
-
-            WarnReservedMoonFields(id, fields);
-
-            var routePrice = fields.GetInt("price");
-            var riskLevel = fields.GetInt("riskLevel");
-            var riskLabel = fields.GetString("tier");
-            if (string.IsNullOrWhiteSpace(riskLabel))
-                riskLabel = fields.GetString("riskLabel");
-
-            var description = fields.GetString("description");
-            var minScrap = fields.GetInt("minScrap");
-            var maxScrap = fields.GetInt("maxScrap");
-
-            if (!routePrice.HasValue &&
-                !riskLevel.HasValue &&
-                string.IsNullOrWhiteSpace(riskLabel) &&
-                string.IsNullOrWhiteSpace(description) &&
-                !minScrap.HasValue &&
-                !maxScrap.HasValue)
-            {
-                OPLog.Info("Config", $"Moon '{id}' is enabled but has no active price/tier/description/scrap fields.");
-                continue;
-            }
 
             collection.Overrides.Add(new MoonOverrideDefinition
             {
                 MoonId = id,
-                RoutePrice = routePrice,
-                RiskLevel = riskLevel,
-                RiskLabel = riskLabel,
-                Description = description,
-                MinScrap = minScrap,
-                MaxScrap = maxScrap
+                RoutePrice = price.Value,
+                RiskLevel = riskLevel.Value,
+                RiskLabel = tier.Value,
+                Description = description.Value,
+                MinScrap = minScrap.Value,
+                MaxScrap = maxScrap.Value
             });
         }
 
@@ -162,12 +141,13 @@ public sealed class RuntimeTuningConfig
                 continue;
 
             var id = level.name;
+            var section = "Moons." + id;
             var moonOverride = new MoonSpawnOverride
             {
                 MoonId = id,
-                InsideEnemies = ResolveEnemyPool(id, "Inside", level.Enemies),
-                OutsideEnemies = ResolveEnemyPool(id, "Outside", level.OutsideEnemies),
-                DaytimeEnemies = ResolveEnemyPool(id, "Daytime", level.DaytimeEnemies)
+                InsideEnemies = ResolveEnemyPool(section, id, "InsideEnemies"),
+                OutsideEnemies = ResolveEnemyPool(section, id, "OutsideEnemies"),
+                DaytimeEnemies = ResolveEnemyPool(section, id, "DaytimeEnemies")
             };
 
             if (moonOverride.InsideEnemies == null &&
@@ -198,22 +178,15 @@ public sealed class RuntimeTuningConfig
             if (level == null || string.IsNullOrWhiteSpace(level.name))
                 continue;
 
-            var entry = _config.Bind(
-                "Moons.RouteMultiplier",
-                level.name,
-                "enabled=false; multiplier=1",
-                "Optional per-moon route price multiplier. Set enabled=true to apply multiplier.");
-            var fields = EntityLine.Parse(entry.Value);
-            if (!fields.Enabled)
-                continue;
-
-            var multiplier = fields.GetFloat("multiplier") ?? 1f;
-            if (Math.Abs(multiplier - 1f) < 0.0001f)
+            var section = "Moons." + level.name;
+            var enabled = BindBool(section, "RouteMultiplierEnabled", false, "Enable the per-moon route multiplier below.");
+            var multiplier = BindFloat(section, "RouteMultiplier", 1f, "Additional route price multiplier for this moon.", 0f, 10f);
+            if (!enabled.Value || Math.Abs(multiplier.Value - 1f) < 0.0001f)
                 continue;
 
             rules.MoonRules[level.name] = new MoonRuntimeRuleDefinition
             {
-                RoutePriceMultiplier = multiplier
+                RoutePriceMultiplier = multiplier.Value
             };
         }
 
@@ -221,63 +194,28 @@ public sealed class RuntimeTuningConfig
         return rules;
     }
 
-    private List<SpawnEntry>? ResolveEnemyPool(string moonId, string poolName, List<SpawnableEnemyWithRarity>? observedPool)
+    private List<SpawnEntry>? ResolveEnemyPool(string section, string moonId, string keyPrefix)
     {
-        var entry = _config.Bind(
-            $"Moons.{poolName}Enemies",
-            moonId,
-            BuildObservedEnemyPoolLine(observedPool),
-            "Moon enemy pool tuning. Set enabled=true to replace this pool. entries format: EnemyId:rarity, EnemyId:rarity.");
-
-        var fields = EntityLine.Parse(entry.Value);
-        if (!fields.Enabled)
+        var enabled = BindBool(section, keyPrefix + "Enabled", false, $"Enable replacement for {keyPrefix}.");
+        if (!enabled.Value)
             return null;
 
-        var entries = fields.GetString("entries");
-        if (string.IsNullOrWhiteSpace(entries))
+        var entries = BindString(section, keyPrefix, "", "Enemy pool entries. Format: EnemyId:rarity, EnemyId:rarity.");
+        if (string.IsNullOrWhiteSpace(entries.Value))
         {
-            OPLog.Info("Config", $"Moon '{moonId}' {poolName}Enemies enabled with empty entries. Runtime pool will be cleared.");
+            OPLog.Info("Config", $"Moon '{moonId}' {keyPrefix} enabled with empty entries. Runtime pool will be cleared.");
             return new List<SpawnEntry>();
         }
 
-        var parsed = ParseSpawnEntries(entries, moonId, poolName);
-        OPLog.Info("Config", $"Moon '{moonId}' {poolName}Enemies replacement requested: entries={parsed.Count}");
+        var parsed = ParseSpawnEntries(entries.Value, moonId, keyPrefix);
+        OPLog.Info("Config", $"Moon '{moonId}' {keyPrefix} replacement requested: entries={parsed.Count}");
         return parsed;
     }
 
-    private static string BuildObservedItemLine(Item item)
+    private void BindEnemyPool(string section, string keyPrefix, List<SpawnableEnemyWithRarity>? pool)
     {
-        return "enabled=false; " +
-               $"displayName={Escape(item.itemName)}; " +
-               $"value={item.creditsWorth.ToString(CultureInfo.InvariantCulture)}; " +
-               $"weight={item.weight.ToString("0.###", CultureInfo.InvariantCulture)}; " +
-               $"scrap={Bool(item.isScrap)}; " +
-               "store=false; storePrice=-1; " +
-               $"battery={Bool(item.requiresBattery)}; " +
-               $"minValue={item.minValue.ToString(CultureInfo.InvariantCulture)}; " +
-               $"maxValue={item.maxValue.ToString(CultureInfo.InvariantCulture)}";
-    }
-
-    private static string BuildObservedMoonLine(SelectableLevel level, int levelIndex)
-    {
-        var routePrice = ResolveRoutePrice(levelIndex);
-        var description = TryReadStringMember(level, "LevelDescription", "levelDescription", "sceneName") ?? "";
-        var minScrap = ReadIntMember(level, "minScrap");
-        var maxScrap = ReadIntMember(level, "maxScrap");
-        return "enabled=false; " +
-               $"displayName={Escape(level.PlanetName)}; " +
-               $"price={routePrice.ToString(CultureInfo.InvariantCulture)}; " +
-               $"tier={Escape(level.riskLevel)}; " +
-               $"riskLevel={ParseRiskLevel(level.riskLevel).ToString(CultureInfo.InvariantCulture)}; " +
-               $"description={Escape(description)}; " +
-               $"minScrap={minScrap.ToString(CultureInfo.InvariantCulture)}; " +
-               $"maxScrap={maxScrap.ToString(CultureInfo.InvariantCulture)}; " +
-               "interior=reserved";
-    }
-
-    private static string BuildObservedEnemyPoolLine(List<SpawnableEnemyWithRarity>? pool)
-    {
-        return "enabled=false; entries=" + FormatEnemyPool(pool);
+        BindBool(section, keyPrefix + "Enabled", false, $"Enable replacement for {keyPrefix}.");
+        BindString(section, keyPrefix, FormatEnemyPool(pool), "Enemy pool entries. Format: EnemyId:rarity, EnemyId:rarity.");
     }
 
     private static string FormatEnemyPool(List<SpawnableEnemyWithRarity>? pool)
@@ -311,18 +249,26 @@ public sealed class RuntimeTuningConfig
         return best;
     }
 
-    private static void WarnReservedItemFields(string itemId, EntityLine fields)
+    private static bool IsStoreItem(Item item)
     {
-        if (fields.GetBool("battery") == true)
-            OPLog.Warning("Config", $"Item '{itemId}' battery is visible but reserved until battery runtime hooks are verified.");
+        var terminal = UnityEngine.Object.FindObjectOfType<Terminal>();
+        if (terminal?.buyableItemsList == null)
+            return false;
 
+        return terminal.buyableItemsList.Any(existing => existing != null && existing.name == item.name);
     }
 
-    private static void WarnReservedMoonFields(string moonId, EntityLine fields)
-    {
-        if (fields.GetString("interior") is { Length: > 0 } interior && !string.Equals(interior, "reserved", StringComparison.OrdinalIgnoreCase))
-            OPLog.Warning("Config", $"Moon '{moonId}' interior is reserved until dungeon flow hooks are verified.");
-    }
+    private ConfigEntry<bool> BindBool(string section, string key, bool value, string description) =>
+        _config.Bind(section, key, value, description);
+
+    private ConfigEntry<string> BindString(string section, string key, string value, string description) =>
+        _config.Bind(section, key, value ?? "", description);
+
+    private ConfigEntry<int> BindInt(string section, string key, int value, string description, int min, int max) =>
+        _config.Bind(section, key, value, new ConfigDescription(description, new AcceptableValueRange<int>(min, max)));
+
+    private ConfigEntry<float> BindFloat(string section, string key, float value, string description, float min, float max) =>
+        _config.Bind(section, key, value, new ConfigDescription(description, new AcceptableValueRange<float>(min, max)));
 
     private static List<SpawnEntry> ParseSpawnEntries(string raw, string moonId, string poolName)
     {
@@ -362,7 +308,7 @@ public sealed class RuntimeTuningConfig
         return result;
     }
 
-    private static int ParseRiskLevel(string risk)
+    private static int ParseRiskLevel(string? risk)
     {
         if (string.IsNullOrEmpty(risk)) return 0;
         if (risk.Contains("S")) return 5;
@@ -407,96 +353,5 @@ public sealed class RuntimeTuningConfig
         }
 
         return 0;
-    }
-
-    private static string Escape(string? value) =>
-        string.IsNullOrWhiteSpace(value)
-            ? ""
-            : value.Replace(";", ",").Trim();
-
-    private static string Bool(bool value) => value ? "true" : "false";
-
-    private sealed class EntityLine
-    {
-        private readonly Dictionary<string, string> _values;
-
-        private EntityLine(Dictionary<string, string> values)
-        {
-            _values = values;
-        }
-
-        public bool Enabled => GetBool("enabled") == true;
-
-        public static EntityLine Parse(string? raw)
-        {
-            var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            if (string.IsNullOrWhiteSpace(raw))
-                return new EntityLine(values);
-
-            foreach (var part in raw.Split(';'))
-            {
-                var trimmed = part.Trim();
-                if (trimmed.Length == 0)
-                    continue;
-
-                var separator = trimmed.IndexOf('=');
-                if (separator <= 0)
-                    continue;
-
-                var key = trimmed.Substring(0, separator).Trim();
-                var value = trimmed.Substring(separator + 1).Trim();
-                values[key] = value;
-            }
-
-            return new EntityLine(values);
-        }
-
-        public string? GetString(string key) =>
-            _values.TryGetValue(key, out var value) ? value : null;
-
-        public int? GetInt(string key)
-        {
-            if (!_values.TryGetValue(key, out var value))
-                return null;
-
-            return int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsed)
-                ? parsed
-                : null;
-        }
-
-        public float? GetFloat(string key)
-        {
-            if (!_values.TryGetValue(key, out var value))
-                return null;
-
-            return float.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var parsed)
-                ? parsed
-                : null;
-        }
-
-        public bool? GetBool(string key)
-        {
-            if (!_values.TryGetValue(key, out var value))
-                return null;
-
-            if (bool.TryParse(value, out var parsed))
-                return parsed;
-
-            if (string.Equals(value, "1", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(value, "yes", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(value, "on", StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-
-            if (string.Equals(value, "0", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(value, "no", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(value, "off", StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
-
-            return null;
-        }
     }
 }

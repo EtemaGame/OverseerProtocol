@@ -20,9 +20,9 @@ Snapshots of the game's vanilla state are exported as structured JSON. This "van
 
 ### 3. Controlled Overrides (Override)
 Once the state is organized, OverseerProtocol applies user tuning from the standard BepInEx config file:
-- **Items**: `[Items]` lists every item as an entity line with observed value, weight, store placeholders, and enable switch.
-- **Moons**: `[Moons]` lists every moon as an entity line with observed price, tier, description placeholder, scrap placeholders, and enable switch.
-- **Spawns**: `[Moons.InsideEnemies]`, `[Moons.OutsideEnemies]`, and `[Moons.DaytimeEnemies]` list each moon's observed enemy pools and allow full replacement.
+- **Items**: `Items.<ItemId>` sections expose one field per editable property: enable switch, value, weight, store membership, battery flag, and scrap value range.
+- **Moons**: `Moons.<MoonId>` sections expose one field per editable property: enable switch, route price, tier, description, scrap counts, enemy pools, and route multiplier.
+- **Spawns**: moon enemy pools live beside each moon as `InsideEnemies`, `OutsideEnemies`, and `DaytimeEnemies` fields with matching enable toggles.
 - **Safety First**: Every supported runtime modification includes validation to prevent crashes.
 
 ## 🚀 Development Status (Foundation V1)

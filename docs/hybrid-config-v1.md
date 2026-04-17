@@ -18,23 +18,20 @@ EnableItemOverrides = true
 EnableMoonOverrides = true
 EnableSpawnOverrides = true
 
-[Items]
-Shovel = enabled=false; displayName=Shovel; value=30; weight=1.13; scrap=false; store=false; storePrice=-1; battery=false; minValue=0; maxValue=0
+[Items.Shovel]
+Enabled = false
+Value = 30
+Weight = 1.13
+InStore = true
 
-[Moons]
-ExperimentationLevel = enabled=false; displayName=41 Experimentation; price=0; tier=B; riskLevel=3; description=; minScrap=8; maxScrap=12; interior=reserved
-
-[Moons.InsideEnemies]
-ExperimentationLevel = enabled=false; entries=Centipede:50, HoarderBug:20
-
-[Moons.OutsideEnemies]
-ExperimentationLevel = enabled=false; entries=MouthDog:10
-
-[Moons.DaytimeEnemies]
-ExperimentationLevel = enabled=false; entries=RedLocustBees:20
-
-[Moons.RouteMultiplier]
-ExperimentationLevel = enabled=false; multiplier=1
+[Moons.ExperimentationLevel]
+Enabled = false
+RoutePrice = 0
+Tier = B
+InsideEnemiesEnabled = false
+InsideEnemies = Centipede:50, HoarderBug:20
+RouteMultiplierEnabled = false
+RouteMultiplier = 1
 ```
 
 Entradas generadas con `enabled=false` sirven como catalogo observado. Solo mutan runtime cuando cambias `enabled=true`.

@@ -93,8 +93,20 @@ public sealed class ItemOverrideApplier
             item.maxValue = def.MaxValue.Value;
         }
 
-        if (!def.CreditsWorth.HasValue && !def.Weight.HasValue && !def.MinValue.HasValue && !def.MaxValue.HasValue)
-            OPLog.Info("Overrides", $"Item tuning entry for {item.name} had no direct value/weight/range fields.");
+        if (def.IsScrap.HasValue)
+        {
+            OPLog.Info("Overrides", $"Overriding {item.name}.isScrap: {item.isScrap} -> {def.IsScrap.Value}");
+            item.isScrap = def.IsScrap.Value;
+        }
+
+        if (def.RequiresBattery.HasValue)
+        {
+            OPLog.Info("Overrides", $"Overriding {item.name}.requiresBattery: {item.requiresBattery} -> {def.RequiresBattery.Value}");
+            item.requiresBattery = def.RequiresBattery.Value;
+        }
+
+        if (!def.CreditsWorth.HasValue && !def.Weight.HasValue && !def.MinValue.HasValue && !def.MaxValue.HasValue && !def.IsScrap.HasValue && !def.RequiresBattery.HasValue)
+            OPLog.Info("Overrides", $"Item tuning entry for {item.name} had no direct value/weight/range/flag fields.");
     }
 
     private static void ApplyStoreFields(Item item, ItemOverrideDefinition def)
@@ -105,13 +117,19 @@ public sealed class ItemOverrideApplier
             item.creditsWorth = def.StorePrice.Value;
         }
 
-        if (def.AddToStore != true)
+        if (!def.AddToStore.HasValue)
             return;
 
         var terminal = UnityEngine.Object.FindObjectOfType<Terminal>();
         if (terminal == null)
         {
-            OPLog.Warning("Overrides", $"Cannot add '{item.name}' to store because Terminal was not found.");
+            OPLog.Warning("Overrides", $"Cannot update store membership for '{item.name}' because Terminal was not found.");
+            return;
+        }
+
+        if (def.AddToStore.Value == false)
+        {
+            RemoveFromStore(terminal, item);
             return;
         }
 
@@ -152,6 +170,39 @@ public sealed class ItemOverrideApplier
             for (var i = 0; i < terminal.itemSalesPercentages.Length && i < sales.Length; i++)
                 sales[i] = terminal.itemSalesPercentages[i];
         }
+
+        terminal.itemSalesPercentages = sales;
+    }
+
+    private static void RemoveFromStore(Terminal terminal, Item item)
+    {
+        if (terminal.buyableItemsList == null || terminal.buyableItemsList.Length == 0)
+            return;
+
+        var before = terminal.buyableItemsList.Length;
+        terminal.buyableItemsList = terminal.buyableItemsList
+            .Where(existing => existing == null || existing.name != item.name)
+            .ToArray();
+
+        if (terminal.buyableItemsList.Length == before)
+        {
+            OPLog.Info("Overrides", $"Item '{item.name}' is not present in Terminal.buyableItemsList.");
+            return;
+        }
+
+        ShrinkSalesArrayLength(terminal);
+        OPLog.Info("Overrides", $"Removed '{item.name}' from Terminal.buyableItemsList. storeCount={terminal.buyableItemsList.Length}");
+    }
+
+    private static void ShrinkSalesArrayLength(Terminal terminal)
+    {
+        var count = terminal.buyableItemsList?.Length ?? 0;
+        if (terminal.itemSalesPercentages == null || terminal.itemSalesPercentages.Length == count)
+            return;
+
+        var sales = new int[count];
+        for (var i = 0; i < terminal.itemSalesPercentages.Length && i < sales.Length; i++)
+            sales[i] = terminal.itemSalesPercentages[i];
 
         terminal.itemSalesPercentages = sales;
     }

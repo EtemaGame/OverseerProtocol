@@ -63,7 +63,9 @@ public sealed class ItemOverrideValidator
                 AddToStore = itemOverride.AddToStore,
                 StorePrice = ValidateCreditsWorth(itemOverride.StorePrice, report, $"{itemPath}.storePrice", itemOverride.Id),
                 MinValue = ValidateCreditsWorth(itemOverride.MinValue, report, $"{itemPath}.minValue", itemOverride.Id),
-                MaxValue = ValidateCreditsWorth(itemOverride.MaxValue, report, $"{itemPath}.maxValue", itemOverride.Id)
+                MaxValue = ValidateCreditsWorth(itemOverride.MaxValue, report, $"{itemPath}.maxValue", itemOverride.Id),
+                IsScrap = itemOverride.IsScrap,
+                RequiresBattery = itemOverride.RequiresBattery
             };
 
             if (validatedOverride.MinValue.HasValue &&
@@ -76,10 +78,12 @@ public sealed class ItemOverrideValidator
 
             if (!validatedOverride.CreditsWorth.HasValue &&
                 !validatedOverride.Weight.HasValue &&
-                validatedOverride.AddToStore != true &&
+                !validatedOverride.AddToStore.HasValue &&
                 !validatedOverride.StorePrice.HasValue &&
                 !validatedOverride.MinValue.HasValue &&
-                !validatedOverride.MaxValue.HasValue)
+                !validatedOverride.MaxValue.HasValue &&
+                !validatedOverride.IsScrap.HasValue &&
+                !validatedOverride.RequiresBattery.HasValue)
             {
                 report.Warning("ITEM_OVERRIDE_EMPTY", $"Item override for '{itemOverride.Id}' does not define any supported fields. Skipping item override.", itemPath);
                 continue;

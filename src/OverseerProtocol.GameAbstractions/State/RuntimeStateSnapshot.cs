@@ -58,8 +58,8 @@ public sealed class RuntimeStateSnapshot
             if (item == null || string.IsNullOrWhiteSpace(item.name))
                 continue;
 
-            _items[item.name] = new ItemState(item.weight, item.creditsWorth, item.minValue, item.maxValue);
-            OPLog.Debug("Snapshot", $"Captured item state: item={item.name}, weight={item.weight:0.###}, creditsWorth={item.creditsWorth}, minValue={item.minValue}, maxValue={item.maxValue}");
+            _items[item.name] = new ItemState(item.weight, item.creditsWorth, item.minValue, item.maxValue, item.isScrap, item.requiresBattery);
+            OPLog.Debug("Snapshot", $"Captured item state: item={item.name}, weight={item.weight:0.###}, creditsWorth={item.creditsWorth}, minValue={item.minValue}, maxValue={item.maxValue}, isScrap={item.isScrap}, requiresBattery={item.requiresBattery}");
         }
 
         return _items.Count;
@@ -151,13 +151,17 @@ public sealed class RuntimeStateSnapshot
             var beforeCredits = item.creditsWorth;
             var beforeMin = item.minValue;
             var beforeMax = item.maxValue;
+            var beforeScrap = item.isScrap;
+            var beforeBattery = item.requiresBattery;
             item.weight = state.Weight;
             item.creditsWorth = state.CreditsWorth;
             item.minValue = state.MinValue;
             item.maxValue = state.MaxValue;
+            item.isScrap = state.IsScrap;
+            item.requiresBattery = state.RequiresBattery;
             OPLog.Debug(
                 "Snapshot",
-                $"Restored item state: item={item.name}, weight {beforeWeight:0.###} -> {item.weight:0.###}, creditsWorth {beforeCredits} -> {item.creditsWorth}, minValue {beforeMin} -> {item.minValue}, maxValue {beforeMax} -> {item.maxValue}");
+                $"Restored item state: item={item.name}, weight {beforeWeight:0.###} -> {item.weight:0.###}, creditsWorth {beforeCredits} -> {item.creditsWorth}, minValue {beforeMin} -> {item.minValue}, maxValue {beforeMax} -> {item.maxValue}, isScrap {beforeScrap} -> {item.isScrap}, requiresBattery {beforeBattery} -> {item.requiresBattery}");
             restored++;
         }
 
@@ -264,18 +268,22 @@ public sealed class RuntimeStateSnapshot
 
     private sealed class ItemState
     {
-        public ItemState(float weight, int creditsWorth, int minValue, int maxValue)
+        public ItemState(float weight, int creditsWorth, int minValue, int maxValue, bool isScrap, bool requiresBattery)
         {
             Weight = weight;
             CreditsWorth = creditsWorth;
             MinValue = minValue;
             MaxValue = maxValue;
+            IsScrap = isScrap;
+            RequiresBattery = requiresBattery;
         }
 
         public float Weight { get; }
         public int CreditsWorth { get; }
         public int MinValue { get; }
         public int MaxValue { get; }
+        public bool IsScrap { get; }
+        public bool RequiresBattery { get; }
     }
 
     private sealed class LevelSpawnState

@@ -74,19 +74,19 @@ public static class OPConfig
             "General",
             "EnableItemOverrides",
             true,
-            "Applies supported item edits from the [Items] entity catalog.");
+            "Applies supported item edits from per-item sections like [Items.Shovel].");
 
         EnableMoonOverrides = config.Bind(
             "General",
             "EnableMoonOverrides",
             true,
-            "Applies supported moon edits from the [Moons] entity catalog.");
+            "Applies supported moon edits from per-moon sections like [Moons.ExperimentationLevel].");
 
         EnableSpawnOverrides = config.Bind(
             "General",
             "EnableSpawnOverrides",
             true,
-            "Applies supported spawn pool edits from [Moons.InsideEnemies], [Moons.OutsideEnemies], and [Moons.DaytimeEnemies].");
+            "Applies supported spawn pool edits from each [Moons.<MoonId>] section.");
 
         EnableRuntimeMultipliers = config.Bind(
             "Multipliers",

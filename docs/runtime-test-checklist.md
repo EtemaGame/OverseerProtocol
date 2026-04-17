@@ -6,26 +6,38 @@
 - `StartOfRound.Start` triggers startup once.
 - Snapshot captures vanilla state.
 - Optional exports go to `overseer-data/exports/`.
-- `.cfg` gains `[Items]`, `[Moons]`, `[Moons.*Enemies]`, and `[Moons.RouteMultiplier]`.
+- `.cfg` gains per-entity sections like `[Items.Shovel]` and `[Moons.ExperimentationLevel]`.
 - No user-editable JSON tuning files are created.
 
 ## Item Tuning
 
 ```ini
-[Items]
-Shovel = enabled=true; displayName=Shovel; value=45; weight=1.05; scrap=false; store=false; storePrice=-1; battery=false; minValue=0; maxValue=0
+[Items.Shovel]
+Enabled = true
+Value = 45
+Weight = 1.05
+InStore = true
+StorePrice = 45
+MinScrapValue = 0
+MaxScrapValue = 0
 ```
 
 Expected:
 
 - `value`, `weight`, `minValue`, and `maxValue` apply.
-- `store=true` adds the item to the terminal store; `storePrice` changes its price.
+- `InStore=true` adds the item to the terminal store; `StorePrice` changes its price.
 
 ## Moon Tuning
 
 ```ini
-[Moons]
-ExperimentationLevel = enabled=true; displayName=41 Experimentation; price=125; tier=B; riskLevel=3; description=Testing route; minScrap=8; maxScrap=14; interior=reserved
+[Moons.ExperimentationLevel]
+Enabled = true
+RoutePrice = 125
+Tier = B
+RiskLevel = 3
+Description = Testing route
+MinScrap = 8
+MaxScrap = 14
 ```
 
 Expected:
@@ -37,8 +49,9 @@ Expected:
 ## Spawn Tuning
 
 ```ini
-[Moons.InsideEnemies]
-ExperimentationLevel = enabled=true; entries=Centipede:50, Flowerman:20
+[Moons.ExperimentationLevel]
+InsideEnemiesEnabled = true
+InsideEnemies = Centipede:50, Flowerman:20
 ```
 
 Expected:
