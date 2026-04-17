@@ -29,11 +29,12 @@ public class MoonRoutePriceResolver
         foreach (var node in allNodes)
         {
             // In Lethal Company, nodes that trigger a moon reroute have buyRerouteToMoon set to the level index.
-            if (node.buyRerouteToMoon != -1)
+            if (node.buyRerouteToMoon >= 0)
             {
                 int levelIndex = node.buyRerouteToMoon;
                 int cost = node.itemCost;
                 foundCount++;
+                OPLog.Info("Economy", $"Route TerminalNode candidate: node={node.name}, levelIndex={levelIndex}, itemCost={cost}");
 
                 if (!_levelIndexToRouteNodes.TryGetValue(levelIndex, out var nodes))
                 {
@@ -65,11 +66,13 @@ public class MoonRoutePriceResolver
     {
         if (_levelIndexToPriceMap.TryGetValue(levelIndex, out int price))
         {
+            OPLog.Info("Economy", $"Resolved route price lookup: levelIndex={levelIndex}, price={price}");
             return price;
         }
 
         // Return a sentinel value or 0 if not found, but we prefer preserving the "not found" state.
         // For V1, if not found, we'll return 0 but log it.
+        OPLog.Warning("Economy", $"Route price lookup missing for levelIndex={levelIndex}. Returning 0.");
         return 0; 
     }
 
@@ -110,6 +113,9 @@ public class MoonRoutePriceResolver
                 HasRouteNode = routeNodes.Count > 0,
                 RouteNodes = routeNodes
             });
+            OPLog.Info(
+                "Economy",
+                $"Moon economy profile: moon={moon.Id}, levelIndex={levelIndex}, routePrice={GetRoutePrice(levelIndex)}, routeNodeCount={routeNodes.Count}");
         }
 
         return profiles;

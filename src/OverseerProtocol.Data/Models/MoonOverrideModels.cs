@@ -4,6 +4,7 @@ namespace OverseerProtocol.Data.Models;
 
 public sealed class MoonOverrideCollection
 {
+    public int SchemaVersion { get; set; } = 1;
     public List<MoonOverrideDefinition> Overrides { get; set; } = new();
 }
 

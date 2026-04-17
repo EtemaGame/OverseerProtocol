@@ -15,7 +15,13 @@ public sealed class ProgressionStore
     {
         var data = JsonFileReader.Read<ProgressionData>(OPPaths.ProgressionSavePath);
         if (data != null)
-            return Normalize(data);
+        {
+            var normalized = Normalize(data);
+            OPLog.Info(
+                "Progression",
+                $"Loaded progression save from {OPPaths.ProgressionSavePath}: schemaVersion={normalized.SchemaVersion}, saveId={normalized.SaveId}, activePreset={normalized.ActivePreset}, shipLevel={normalized.Ship.Level}, shipXp={normalized.Ship.Experience}, players={normalized.Players.Count}");
+            return normalized;
+        }
 
         data = CreateDefault();
         Save(data);
@@ -27,6 +33,9 @@ public sealed class ProgressionStore
     {
         data.LastUpdatedUtc = DateTime.UtcNow.ToString("O");
         JsonFileWriter.Write(OPPaths.ProgressionSavePath, data);
+        OPLog.Info(
+            "Progression",
+            $"Saved progression: schemaVersion={data.SchemaVersion}, saveId={data.SaveId}, activePreset={data.ActivePreset}, shipLevel={data.Ship.Level}, shipXp={data.Ship.Experience}, points={data.Ship.UnspentPoints}, players={data.Players.Count}");
     }
 
     public ProgressionData GrantShipExperience(int amount)
@@ -66,13 +75,22 @@ public sealed class ProgressionStore
     private static ProgressionData Normalize(ProgressionData data)
     {
         if (data.SchemaVersion <= 0)
+        {
+            OPLog.Info("Progression", $"Normalizing progression schemaVersion {data.SchemaVersion} -> 1");
             data.SchemaVersion = 1;
+        }
 
         if (string.IsNullOrWhiteSpace(data.SaveId))
+        {
+            OPLog.Info("Progression", "Normalizing empty SaveId -> default");
             data.SaveId = "default";
+        }
 
         if (string.IsNullOrWhiteSpace(data.ActivePreset))
+        {
+            OPLog.Info("Progression", $"Normalizing empty ActivePreset -> {OPConfig.ActivePresetName}");
             data.ActivePreset = OPConfig.ActivePresetName;
+        }
 
         data.Ship ??= new ShipProgressionData();
         data.Players ??= new System.Collections.Generic.List<PlayerProgressionData>();

@@ -21,6 +21,7 @@ public sealed class ExperimentalMultiplayerFeature
 
     public void Apply()
     {
+        OPLog.Info("Multiplayer", "Experimental multiplayer apply requested.");
         if (!OPConfig.EnableExperimentalMultiplayer.Value)
         {
             OPLog.Info("Multiplayer", "Experimental multiplayer disabled by config.");
@@ -119,11 +120,17 @@ public sealed class ExperimentalMultiplayerFeature
     {
         var type = AccessTools.TypeByName(typeName);
         if (type == null)
+        {
+            OPLog.Warning("Multiplayer", $"Reflection type not found: {typeName}");
             return 0;
+        }
 
         var instance = GetStaticMemberValue(type, instanceMemberName);
         if (instance == null)
+        {
+            OPLog.Warning("Multiplayer", $"Reflection singleton not found: {typeName}.{instanceMemberName}");
             return 0;
+        }
 
         var patched = 0;
         foreach (var memberName in MaxPlayerMemberNames)
@@ -152,7 +159,9 @@ public sealed class ExperimentalMultiplayerFeature
         if (field == null || field.FieldType != typeof(int))
             return 0;
 
+        var before = (int)field.GetValue(instance);
         field.SetValue(instance, value);
+        OPLog.Warning("Multiplayer", $"Experimental max player field patched: type={instance.GetType().Name}, field={fieldName}, value {before} -> {value}");
         return 1;
     }
 
@@ -162,7 +171,9 @@ public sealed class ExperimentalMultiplayerFeature
         if (property == null || property.PropertyType != typeof(int) || !property.CanWrite)
             return 0;
 
+        var before = (int)property.GetValue(instance, null);
         property.SetValue(instance, value, null);
+        OPLog.Warning("Multiplayer", $"Experimental max player property patched: type={instance.GetType().Name}, property={propertyName}, value {before} -> {value}");
         return 1;
     }
 

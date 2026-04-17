@@ -19,10 +19,11 @@ Snapshots of the game's vanilla state are exported as structured JSON. This "van
 - **Contract Documentation**: Clear visibility into what the game exposes to modders.
 
 ### 3. Controlled Overrides (Override)
-Once the state is organized, OverseerProtocol allows for runtime modifications through an external override layer.
-- **Item Overrides**: Modify weights, store prices, and properties safely.
-- **Spawn Overrides**: Reconfigure enemy pools and rarities per moon.
-- **Safety First**: Every modification includes strict validation to prevent crashes.
+Once the state is organized, OverseerProtocol writes human-editable tuning files:
+- **Items**: `overseer-data/items.json` for item values, weight, and reserved shop/battery fields.
+- **Moons**: `overseer-data/moons/<MoonId>.json` for route price, risk, spawn pools, and reserved scrap/item pools.
+- **Utility Catalog**: `overseer-data/utility-catalog.json` for copy/paste IDs.
+- **Safety First**: Every supported runtime modification includes validation to prevent crashes.
 
 ## 🚀 Development Status (Foundation V1)
 
@@ -30,17 +31,19 @@ The official project roadmap lives in [`ROADMAP.md`](ROADMAP.md). It is the sour
 
 Reference setup instructions live in [`docs/references-setup.md`](docs/references-setup.md).
 
+User tuning instructions live in [`docs/user-tuning-v1.md`](docs/user-tuning-v1.md).
+
 Latest implementation review: [`docs/implementation-review-2026-04-16.md`](docs/implementation-review-2026-04-16.md).
 
 - [x] **Infrastructure**: BepInEx loading, Harmony patching, stable lifecycle triggers.
 - [x] **Data Layer**: Clean exports for items, moons, and enemies.
-- [x] **Item Overrides (V1)**: Runtime modification of weight and store prices.
-- [x] **Spawn Overrides (V1)**: Pool replacement and rarity tuning per moon.
+- [x] **Item Tuning (V1)**: Runtime modification of item weight and value through `overseer-data/items.json`.
+- [x] **Spawn Tuning (V1)**: Pool replacement and rarity tuning through one file per moon.
 - [x] **Validation Layer**: Cross-reference resolution and safety checks.
 - [x] **Hybrid Config**: `.cfg` for simple toggles + JSON for complex profiles.
 - [x] **Moon Economy V2**: Route price resolution and raw TerminalNode economy export.
-- [x] **Moon Overrides (V1)**: Risk labels and route prices through `moons.override.json`.
-- [x] **Presets V1**: Built-in preset manifests, safe multipliers, override templates, and rules templates.
+- [x] **Moon Tuning (V1)**: Risk labels and route prices through `overseer-data/moons/<MoonId>.json`.
+- [x] **Presets V1**: Built-in preset manifests and safe multiplier defaults.
 - [x] **Semantic Difficulty V1**: Aggression profiles layered over spawn rarity multipliers.
 - [x] **Runtime Snapshot V1**: In-memory vanilla baseline for reset/reload workflows.
 - [x] **Runtime Rules V1**: Data contract plus active route/travel-discount rule application.
@@ -55,9 +58,9 @@ Latest implementation review: [`docs/implementation-review-2026-04-16.md`](docs/
 ## Current Verification Status
 
 - BepInEx and Harmony references are present under `references/bepinex`.
-- Lethal Company game assemblies are still required under `references/game` before a real build can validate game symbols.
+- Lethal Company game assemblies are available locally for build-time symbol validation.
 - JSON sample validation passes with local Node.
-- `dotnet build` is pending because `dotnet` is not currently available in PATH.
+- `dotnet build OverseerProtocol.slnx` passes locally.
 
 ---
 

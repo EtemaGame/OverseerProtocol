@@ -18,13 +18,17 @@ public static class JsonFileReader
     {
         if (!File.Exists(path))
         {
+            OPLog.Info("Json", $"JSON file not found: {path}");
             return default;
         }
 
         try
         {
             var json = File.ReadAllText(path);
-            return JsonConvert.DeserializeObject<T>(json, Settings);
+            OPLog.Info("Json", $"Reading JSON file: {path} ({json.Length} chars)");
+            var result = JsonConvert.DeserializeObject<T>(json, Settings);
+            OPLog.Info("Json", $"Read JSON file OK: {path}, type={typeof(T).Name}, resultNull={result == null}");
+            return result;
         }
         catch (Exception ex)
         {

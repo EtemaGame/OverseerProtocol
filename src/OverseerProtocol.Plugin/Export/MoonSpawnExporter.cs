@@ -18,7 +18,7 @@ namespace OverseerProtocol.Export
 
             var path = OPPaths.SpawnProfileExportPath;
             JsonFileWriter.Write(path, profiles);
-            OPLog.Info("Export", $"Desplegados perfiles de spawn ({profiles.Count} registros) en {path}");
+            OPLog.Info("Export", $"Wrote moon spawn profiles: count={profiles.Count}, path={path}");
         }
     }
 }

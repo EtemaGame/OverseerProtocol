@@ -1,5 +1,6 @@
 using System;
 using OverseerProtocol.Configuration;
+using OverseerProtocol.Core.Logging;
 using OverseerProtocol.Core.Paths;
 
 namespace OverseerProtocol.Features;
@@ -9,7 +10,10 @@ public sealed class AdminCommandService
     public AdminCommandResult Execute(string input)
     {
         if (string.IsNullOrWhiteSpace(input))
+        {
+            OPLog.Info("Admin", "Terminal input was empty. Passing through to vanilla.");
             return AdminCommandResult.NotHandled();
+        }
 
         var normalized = input.Trim();
         var prefix = OPConfig.AdminCommandPrefix?.Value;
@@ -21,12 +25,15 @@ public sealed class AdminCommandService
         if (!normalized.StartsWith(prefix + " ", StringComparison.OrdinalIgnoreCase) &&
             !string.Equals(normalized, prefix, StringComparison.OrdinalIgnoreCase))
         {
+            OPLog.Info("Admin", $"Terminal input is not an OverseerProtocol command. prefix={prefix}, input='{normalized}'. Passing through to vanilla.");
             return AdminCommandResult.NotHandled();
         }
 
         var command = normalized.Length == prefix.Length
             ? "help"
             : normalized.Substring(prefix.Length + 1).Trim().ToLowerInvariant();
+
+        OPLog.Info("Admin", $"OverseerProtocol admin command parsed: raw='{normalized}', command='{command}'");
 
         switch (command)
         {
@@ -81,7 +88,9 @@ public sealed class AdminCommandService
     private static string GetPathsText() =>
         "DataRoot: " + OPPaths.DataRoot + "\n" +
         "Exports: " + OPPaths.ExportRoot + "\n" +
-        "Overrides: " + OPPaths.OverridesRoot + "\n" +
+        "Items config: " + OPPaths.ItemsConfigPath + "\n" +
+        "Moon configs: " + OPPaths.MoonConfigRoot + "\n" +
+        "Utility catalog: " + OPPaths.UtilityCatalogPath + "\n" +
         "Presets: " + OPPaths.PresetsRoot + "\n" +
         "Saves: " + OPPaths.PersistenceRoot + "\n" +
         "Rules: " + OPPaths.RulesRoot;

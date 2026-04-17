@@ -1,4 +1,5 @@
 using System.IO;
+using OverseerProtocol.Core.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
@@ -21,5 +22,6 @@ public static class JsonFileWriter
             Directory.CreateDirectory(dir);
 
         File.WriteAllText(path, json);
+        OPLog.Info("Json", $"Wrote JSON file: {path} ({json.Length} chars, type={typeof(T).Name})");
     }
 }

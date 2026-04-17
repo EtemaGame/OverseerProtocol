@@ -5,6 +5,7 @@ namespace OverseerProtocol.Data.Models;
 
 public sealed class SpawnOverrideCollection
 {
+    public int SchemaVersion { get; set; } = 1;
     public List<MoonSpawnOverride> Overrides { get; set; } = new();
 }
 

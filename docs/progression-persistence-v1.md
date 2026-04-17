@@ -48,7 +48,7 @@ Perk definitions are modeled separately from saved ranks:
 - `playerPerks`: Sprint, jump, carry, ladder, resistance, and similar player stats.
 - `shipPerks`: Scanner, battery, travel discount, dropship, loot saver, and similar ship stats.
 
-The current implementation only defines the model. Runtime perk application should come after item/spawn/moon overrides and terminal/admin tooling are stable.
+The current implementation only defines the model. Runtime perk application should come after item/spawn/moon tuning and terminal/admin tooling are stable.
 
 Default perk definitions are seeded to:
 

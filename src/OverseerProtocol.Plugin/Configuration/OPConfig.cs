@@ -47,37 +47,37 @@ public static class OPConfig
             "General",
             "EnableDataExport",
             true,
-            "Exports vanilla catalogs before runtime overrides are applied.");
+            "Exports vanilla catalogs before runtime user tuning is applied.");
 
         ActivePreset = config.Bind(
             "General",
             "ActivePreset",
             DefaultPreset,
-            "Preset/profile name. 'default' reads overseer-data/overrides; any other value reads overseer-data/presets/<name>/overrides.");
+            "Preset/profile name for global multiplier defaults. Detailed tuning lives in overseer-data/items.json and overseer-data/moons/<MoonId>.json.");
 
         EnableItemOverrides = config.Bind(
             "Overrides",
             "EnableItemOverrides",
             true,
-            "Applies items.override.json after export.");
+            "Applies supported item edits from overseer-data/items.json after export.");
 
         EnableMoonOverrides = config.Bind(
             "Overrides",
             "EnableMoonOverrides",
             true,
-            "Applies moons.override.json after export.");
+            "Applies supported moon edits from overseer-data/moons/<MoonId>.json after export.");
 
         EnableSpawnOverrides = config.Bind(
             "Overrides",
             "EnableSpawnOverrides",
             true,
-            "Applies spawns.override.json after export.");
+            "Applies supported spawn pool edits from overseer-data/moons/<MoonId>.json after export.");
 
         EnableRuntimeMultipliers = config.Bind(
             "Multipliers",
             "EnableRuntimeMultipliers",
             true,
-            "Applies simple .cfg multipliers after JSON overrides.");
+            "Applies simple .cfg multipliers after user JSON tuning.");
 
         EnableProgressionStorage = config.Bind(
             "Progression",
@@ -149,19 +149,19 @@ public static class OPConfig
             "Validation",
             "StrictValidation",
             false,
-            "When true, any validation warning aborts the affected override flow. Errors always abort.");
+            "When true, any validation warning aborts the affected tuning flow. Errors always abort.");
 
         DryRunOverrides = config.Bind(
             "Validation",
             "DryRunOverrides",
             false,
-            "When true, override files are loaded and validated but no runtime item/spawn mutations are applied.");
+            "When true, user tuning files are loaded and validated but no runtime mutations are applied.");
 
         AbortOnInvalidOverrideBlock = config.Bind(
             "Validation",
             "AbortOnInvalidOverrideBlock",
             false,
-            "Reserved policy flag for stricter validators. When true, invalid override blocks should abort the affected flow instead of being skipped.");
+            "Reserved policy flag for stricter validators. When true, invalid tuning blocks should abort the affected flow instead of being skipped.");
 
         AggressionProfile = config.Bind(
             "SemanticDifficulty",
@@ -176,7 +176,7 @@ public static class OPConfig
             "ItemWeightMultiplier",
             1f,
             new ConfigDescription(
-                "Multiplies every runtime item weight after JSON item overrides. 1 keeps current values.",
+                "Multiplies every runtime item weight after items.json tuning. 1 keeps current values.",
                 new AcceptableValueRange<float>(0f, 10f)));
 
         SpawnRarityMultiplier = config.Bind(
@@ -184,7 +184,7 @@ public static class OPConfig
             "SpawnRarityMultiplier",
             1f,
             new ConfigDescription(
-                "Multiplies every runtime spawn pool rarity after JSON spawn overrides. 1 keeps current values.",
+                "Multiplies every runtime spawn pool rarity after moons/*.json spawn tuning. 1 keeps current values.",
                 new AcceptableValueRange<float>(0f, 10f)));
 
         RoutePriceMultiplier = config.Bind(
@@ -192,7 +192,7 @@ public static class OPConfig
             "RoutePriceMultiplier",
             1f,
             new ConfigDescription(
-                "Multiplies every runtime moon route price after JSON moon overrides. 1 keeps current values.",
+                "Multiplies every runtime moon route price after moons/*.json tuning. 1 keeps current values.",
                 new AcceptableValueRange<float>(0f, 10f)));
 
         ExperimentalMaxPlayers = config.Bind(

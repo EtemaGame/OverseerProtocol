@@ -27,11 +27,17 @@ internal static class ExperimentalMultiplayerHook
     {
         var type = AccessTools.TypeByName(typeName);
         if (type == null)
+        {
+            OPLog.Warning("Multiplayer", $"Cannot patch {typeName}.{methodName}: type not found.");
             return;
+        }
 
         var method = AccessTools.Method(type, methodName);
         if (method == null)
+        {
+            OPLog.Warning("Multiplayer", $"Cannot patch {typeName}.{methodName}: method not found.");
             return;
+        }
 
         try
         {

@@ -29,9 +29,6 @@ public static class OPPaths
     public static string EconomyExportRoot =>
         Path.Combine(ExportRoot, "economy");
 
-    public static string OverridesRoot =>
-        Path.Combine(DataRoot, "overrides");
-
     public static string PresetsRoot =>
         Path.Combine(DataRoot, "presets");
 
@@ -43,6 +40,15 @@ public static class OPPaths
 
     public static string DefinitionsRoot =>
         Path.Combine(DataRoot, "definitions");
+
+    public static string MoonConfigRoot =>
+        Path.Combine(DataRoot, "moons");
+
+    public static string ItemsConfigPath =>
+        Path.Combine(DataRoot, "items.json");
+
+    public static string UtilityCatalogPath =>
+        Path.Combine(DataRoot, "utility-catalog.json");
 
     public static string ItemExportPath =>
         Path.Combine(ItemExportRoot, "items.json");
@@ -71,29 +77,8 @@ public static class OPPaths
     public static string PerkCatalogPath =>
         Path.Combine(DefinitionsRoot, "perks.json");
 
-    public static string ItemOverridePath =>
-        Path.Combine(OverridesRoot, "items.override.json");
-
-    public static string SpawnOverridePath =>
-        Path.Combine(OverridesRoot, "spawns.override.json");
-
-    public static string MoonOverridePath =>
-        Path.Combine(OverridesRoot, "moons.override.json");
-
-    public static string GetItemOverridePath(string presetName) =>
-        GetOverridePath("items.override.json", presetName);
-
-    public static string GetSpawnOverridePath(string presetName) =>
-        GetOverridePath("spawns.override.json", presetName);
-
-    public static string GetMoonOverridePath(string presetName) =>
-        GetOverridePath("moons.override.json", presetName);
-
     public static string GetPresetRoot(string presetName) =>
         Path.Combine(PresetsRoot, SanitizePathSegment(presetName));
-
-    public static string GetPresetOverridesRoot(string presetName) =>
-        Path.Combine(GetPresetRoot(presetName), "overrides");
 
     public static string GetPresetManifestPath(string presetName) =>
         Path.Combine(GetPresetRoot(presetName), "preset.json");
@@ -121,23 +106,15 @@ public static class OPPaths
         Directory.CreateDirectory(EnemyExportRoot);
         Directory.CreateDirectory(SpawnExportRoot);
         Directory.CreateDirectory(EconomyExportRoot);
-        Directory.CreateDirectory(OverridesRoot);
         Directory.CreateDirectory(PresetsRoot);
         Directory.CreateDirectory(PersistenceRoot);
         Directory.CreateDirectory(RulesRoot);
         Directory.CreateDirectory(DefinitionsRoot);
+        Directory.CreateDirectory(MoonConfigRoot);
     }
 
-    private static string GetOverridePath(string fileName, string presetName)
-    {
-        if (string.IsNullOrWhiteSpace(presetName) ||
-            string.Equals(presetName, "default", System.StringComparison.OrdinalIgnoreCase))
-        {
-            return Path.Combine(OverridesRoot, fileName);
-        }
-
-        return Path.Combine(GetPresetOverridesRoot(presetName), fileName);
-    }
+    public static string GetMoonConfigPath(string moonId) =>
+        Path.Combine(MoonConfigRoot, SanitizePathSegment(moonId) + ".json");
 
     private static string SanitizePathSegment(string value)
     {

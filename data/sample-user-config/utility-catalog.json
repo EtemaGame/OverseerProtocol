@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "notes": "Ejemplo reducido. El archivo real lista todos los items, lunas, enemigos y spawn profiles.",
+  "items": [
+    {
+      "id": "Shovel",
+      "displayName": "Shovel",
+      "creditsWorth": 30,
+      "weight": 1.13
+    }
+  ],
+  "moons": [
+    {
+      "id": "ExperimentationLevel",
+      "internalName": "41 Experimentation",
+      "levelIndex": 0,
+      "routePrice": 0
+    }
+  ],
+  "enemies": [
+    {
+      "id": "Centipede",
+      "displayName": "Centipede"
+    },
+    {
+      "id": "Flowerman",
+      "displayName": "Flowerman"
+    }
+  ],
+  "moonSpawnProfiles": []
+}

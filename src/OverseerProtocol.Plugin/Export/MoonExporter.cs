@@ -18,7 +18,7 @@ namespace OverseerProtocol.Export
 
             var path = OPPaths.MoonExportPath;
             JsonFileWriter.Write(path, moons);
-            OPLog.Info("Export", $"Desplegado catálogo de lunas ({moons.Count} registros) en {path}");
+            OPLog.Info("Export", $"Wrote moon catalog: count={moons.Count}, path={path}");
         }
     }
 }

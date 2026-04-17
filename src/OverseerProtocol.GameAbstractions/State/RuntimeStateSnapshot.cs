@@ -55,6 +55,7 @@ public sealed class RuntimeStateSnapshot
                 continue;
 
             _items[item.name] = new ItemState(item.weight, item.creditsWorth);
+            OPLog.Info("Snapshot", $"Captured item state: item={item.name}, weight={item.weight:0.###}, creditsWorth={item.creditsWorth}");
         }
 
         return _items.Count;
@@ -78,6 +79,9 @@ public sealed class RuntimeStateSnapshot
                 ClonePool(level.Enemies),
                 ClonePool(level.OutsideEnemies),
                 ClonePool(level.DaytimeEnemies));
+            OPLog.Info(
+                "Snapshot",
+                $"Captured moon state: moon={level.name}, riskLevel={level.riskLevel}, inside={level.Enemies?.Count ?? 0}, outside={level.OutsideEnemies?.Count ?? 0}, daytime={level.DaytimeEnemies?.Count ?? 0}");
         }
 
         return _levels.Count;
@@ -95,6 +99,7 @@ public sealed class RuntimeStateSnapshot
                 continue;
 
             _routeNodes[node.name] = new RouteNodeState(node.itemCost);
+            OPLog.Info("Snapshot", $"Captured route node state: node={node.name}, moonIndex={node.buyRerouteToMoon}, itemCost={node.itemCost}");
         }
 
         return _routeNodes.Count;
@@ -117,8 +122,13 @@ public sealed class RuntimeStateSnapshot
             if (!_items.TryGetValue(item.name, out var state))
                 continue;
 
+            var beforeWeight = item.weight;
+            var beforeCredits = item.creditsWorth;
             item.weight = state.Weight;
             item.creditsWorth = state.CreditsWorth;
+            OPLog.Info(
+                "Snapshot",
+                $"Restored item state: item={item.name}, weight {beforeWeight:0.###} -> {item.weight:0.###}, creditsWorth {beforeCredits} -> {item.creditsWorth}");
             restored++;
         }
 
@@ -142,10 +152,17 @@ public sealed class RuntimeStateSnapshot
             if (!_levels.TryGetValue(level.name, out var state))
                 continue;
 
+            var beforeRisk = level.riskLevel;
+            var beforeInside = level.Enemies?.Count ?? 0;
+            var beforeOutside = level.OutsideEnemies?.Count ?? 0;
+            var beforeDaytime = level.DaytimeEnemies?.Count ?? 0;
             level.riskLevel = state.RiskLevel;
             level.Enemies = ClonePool(state.InsideEnemies);
             level.OutsideEnemies = ClonePool(state.OutsideEnemies);
             level.DaytimeEnemies = ClonePool(state.DaytimeEnemies);
+            OPLog.Info(
+                "Snapshot",
+                $"Restored moon state: moon={level.name}, riskLevel {beforeRisk} -> {level.riskLevel}, inside {beforeInside} -> {level.Enemies.Count}, outside {beforeOutside} -> {level.OutsideEnemies.Count}, daytime {beforeDaytime} -> {level.DaytimeEnemies.Count}");
             restored++;
         }
 
@@ -167,7 +184,9 @@ public sealed class RuntimeStateSnapshot
             if (!_routeNodes.TryGetValue(node.name, out var state))
                 continue;
 
+            var before = node.itemCost;
             node.itemCost = state.ItemCost;
+            OPLog.Info("Snapshot", $"Restored route node state: node={node.name}, itemCost {before} -> {node.itemCost}");
             restored++;
         }
 

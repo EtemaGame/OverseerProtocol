@@ -1,9 +1,0 @@
-{
-  "overrides": [
-    {
-      "moonId": "ExperimentationLevel",
-      "riskLevel": 2,
-      "routePrice": 150
-    }
-  ]
-}

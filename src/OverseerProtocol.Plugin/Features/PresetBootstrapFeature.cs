@@ -3,10 +3,7 @@ using System.IO;
 using OverseerProtocol.Core.Logging;
 using OverseerProtocol.Core.Paths;
 using OverseerProtocol.Core.Serialization;
-using OverseerProtocol.Data.Models;
-using OverseerProtocol.Data.Models.Lobby;
 using OverseerProtocol.Data.Models.Presets;
-using OverseerProtocol.Data.Models.Rules;
 
 namespace OverseerProtocol.Features;
 
@@ -14,6 +11,8 @@ public static class PresetBootstrapFeature
 {
     public static void EnsureBuiltInPresets()
     {
+        OPLog.Info("Presets", "Ensuring built-in preset manifests exist.");
+
         EnsurePreset(new PresetDefinition
         {
             Id = "vanilla-plus",
@@ -25,7 +24,7 @@ public static class PresetBootstrapFeature
             Notes = new List<string>
             {
                 "Uses runtime multipliers only.",
-                "Add optional JSON overrides under this preset's overrides folder."
+                "Detailed tuning now lives in overseer-data/items.json and overseer-data/moons/<MoonId>.json."
             }
         });
 
@@ -40,7 +39,7 @@ public static class PresetBootstrapFeature
             Notes = new List<string>
             {
                 "Uses runtime multipliers only for safe cross-modpack behavior.",
-                "JSON overrides can be layered into the preset folder for advanced tuning."
+                "Detailed tuning now lives in overseer-data/items.json and overseer-data/moons/<MoonId>.json."
             }
         });
 
@@ -54,7 +53,7 @@ public static class PresetBootstrapFeature
             RoutePriceMultiplier = 1.5f,
             Notes = new List<string>
             {
-                "Intentionally ships without moon IDs; add moons.override.json entries after exporting catalogs.",
+                "Tune moon route prices in overseer-data/moons/<MoonId>.json after exports are generated.",
                 "Designed as a safe starting point for host-side economy tuning."
             }
         });
@@ -70,7 +69,7 @@ public static class PresetBootstrapFeature
             Notes = new List<string>
             {
                 "Uses a modest global spawn rarity multiplier until explicit spawn pools are added.",
-                "Add spawns.override.json entries after exporting moon and enemy catalogs."
+                "Set a moon spawn pool mode to replace in overseer-data/moons/<MoonId>.json to tune exact enemies."
             }
         });
 
@@ -85,7 +84,7 @@ public static class PresetBootstrapFeature
             Notes = new List<string>
             {
                 "Uses a light item weight multiplier only.",
-                "Add items.override.json entries after exporting item catalogs."
+                "Tune item values in overseer-data/items.json after exports are generated."
             }
         });
     }
@@ -93,37 +92,17 @@ public static class PresetBootstrapFeature
     private static void EnsurePreset(PresetDefinition preset)
     {
         var presetRoot = OPPaths.GetPresetRoot(preset.Id);
-        var overridesRoot = OPPaths.GetPresetOverridesRoot(preset.Id);
         var manifestPath = OPPaths.GetPresetManifestPath(preset.Id);
 
         Directory.CreateDirectory(presetRoot);
-        Directory.CreateDirectory(overridesRoot);
 
         if (File.Exists(manifestPath))
         {
-            EnsureOverrideTemplates(preset.Id);
+            OPLog.Info("Presets", $"Built-in preset '{preset.Id}' already exists at {manifestPath}. User file will not be overwritten.");
             return;
         }
 
         JsonFileWriter.Write(manifestPath, preset);
-        EnsureOverrideTemplates(preset.Id);
         OPLog.Info("Presets", $"Seeded built-in preset '{preset.Id}' at {manifestPath}");
-    }
-
-    private static void EnsureOverrideTemplates(string presetId)
-    {
-        EnsureTemplate(OPPaths.GetItemOverridePath(presetId), new ItemOverrideCollection());
-        EnsureTemplate(OPPaths.GetSpawnOverridePath(presetId), new SpawnOverrideCollection());
-        EnsureTemplate(OPPaths.GetMoonOverridePath(presetId), new MoonOverrideCollection());
-        EnsureTemplate(OPPaths.GetPresetLobbyRulesPath(presetId), new LobbyRulesDefinition());
-        EnsureTemplate(OPPaths.GetPresetRuntimeRulesPath(presetId), new RuntimeRulesDefinition());
-    }
-
-    private static void EnsureTemplate<T>(string path, T template)
-    {
-        if (File.Exists(path))
-            return;
-
-        JsonFileWriter.Write(path, template);
     }
 }

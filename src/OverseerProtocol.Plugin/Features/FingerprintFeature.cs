@@ -1,5 +1,8 @@
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using OverseerProtocol.Configuration;
+using OverseerProtocol.Core.Logging;
 using OverseerProtocol.Core.Paths;
 using OverseerProtocol.Core.Security;
 
@@ -14,18 +17,19 @@ public sealed class FingerprintFeature
         var presetFiles = new List<string>
         {
             OPPaths.GetPresetManifestPath(presetName),
-            OPPaths.GetItemOverridePath(presetName),
-            OPPaths.GetSpawnOverridePath(presetName),
-            OPPaths.GetMoonOverridePath(presetName),
+            OPPaths.ItemsConfigPath,
             OPPaths.GetPresetLobbyRulesPath(presetName),
             OPPaths.GetPresetRuntimeRulesPath(presetName)
         };
 
+        if (Directory.Exists(OPPaths.MoonConfigRoot))
+            presetFiles.AddRange(Directory.GetFiles(OPPaths.MoonConfigRoot, "*.json").OrderBy(path => path, System.StringComparer.Ordinal));
+
         var configText =
             "preset=" + presetName + "\n" +
-            "itemOverrides=" + OPConfig.EnableItemOverrides.Value + "\n" +
-            "spawnOverrides=" + OPConfig.EnableSpawnOverrides.Value + "\n" +
-            "moonOverrides=" + OPConfig.EnableMoonOverrides.Value + "\n" +
+            "itemTuning=" + OPConfig.EnableItemOverrides.Value + "\n" +
+            "spawnTuning=" + OPConfig.EnableSpawnOverrides.Value + "\n" +
+            "moonTuning=" + OPConfig.EnableMoonOverrides.Value + "\n" +
             "runtimeMultipliers=" + OPConfig.EnableRuntimeMultipliers.Value + "\n" +
             "strictValidation=" + OPConfig.StrictValidation.Value + "\n" +
             "dryRunOverrides=" + OPConfig.DryRunOverrides.Value + "\n" +
@@ -34,12 +38,20 @@ public sealed class FingerprintFeature
             "routePriceMultiplier=" + OPConfig.RoutePriceMultiplier.Value.ToString("R") + "\n" +
             "aggressionProfile=" + OPConfig.AggressionProfile.Value + "\n";
 
-        return new RuntimeFingerprints
+        foreach (var path in presetFiles)
+            OPLog.Info("Fingerprint", $"Fingerprint input file: {path}");
+
+        OPLog.Info("Fingerprint", "Fingerprint config input:\n" + configText);
+
+        var result = new RuntimeFingerprints
         {
             ActivePreset = presetName,
             PresetFingerprint = FingerprintUtility.ComputeCombinedFileHash(presetFiles),
             ConfigFingerprint = FingerprintUtility.ComputeTextHash(configText)
         };
+
+        OPLog.Info("Fingerprint", $"Fingerprint result: preset={result.ActivePreset}, presetHash={result.PresetFingerprint}, configHash={result.ConfigFingerprint}");
+        return result;
     }
 }
 

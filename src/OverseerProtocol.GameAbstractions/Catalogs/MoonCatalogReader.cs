@@ -42,6 +42,9 @@ public class MoonCatalogReader
             };
 
             definitions.Add(def);
+            OPLog.Info(
+                "Moons",
+                $"Catalog moon: id={def.Id}, internalName={def.InternalName}, levelIndex={def.LevelIndex}, riskLevel={def.RiskLevel}, rawRisk={level.riskLevel}");
         }
 
         return definitions;
@@ -51,6 +54,7 @@ public class MoonCatalogReader
     {
         // Simple heuristic for V1, can be refined later
         if (string.IsNullOrEmpty(risk)) return 0;
+        if (risk.Contains("Safe")) return 0;
         if (risk.Contains("S")) return 5;
         if (risk.Contains("A")) return 4;
         if (risk.Contains("B")) return 3;

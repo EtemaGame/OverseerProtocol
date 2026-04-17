@@ -16,8 +16,9 @@ namespace OverseerProtocol.Export
                 return;
             }
 
-            JsonFileWriter.Write(OPPaths.MoonEconomyExportPath, profiles);
-            OPLog.Info("Export", $"Desplegados perfiles económicos de lunas ({profiles.Count} registros) en {OPPaths.MoonEconomyExportPath}");
+            var path = OPPaths.MoonEconomyExportPath;
+            JsonFileWriter.Write(path, profiles);
+            OPLog.Info("Export", $"Wrote moon economy profiles: count={profiles.Count}, path={path}");
         }
     }
 }

@@ -65,7 +65,7 @@ V1 creates, loads, normalizes, and partially applies this file. Most fields are 
 Active now:
 
 - Global route prices can be changed with `RoutePriceMultiplier`.
-- Per-moon route prices can be changed with `moons.override.json`.
+- Per-moon route prices can be changed with `overseer-data/moons/<MoonId>.json`.
 - `economy.travelDiscountMultiplier` is applied to terminal route prices.
 - `moonRules.<moonId>.routePriceMultiplier` is applied to terminal route prices for that moon.
 

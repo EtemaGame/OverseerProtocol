@@ -30,6 +30,7 @@ namespace OverseerProtocol
             Bootstrapper.Initialize(Logger);
             OPConfig.Bind(Config);
             PresetBootstrapFeature.EnsureBuiltInPresets();
+            RuntimeDiagnostics.LogBootSummary();
             OPLog.Info("Bootstrap", $"{ModName} cargando core phase...");
 
             _harmony = new Harmony(ModGuid);
@@ -41,7 +42,7 @@ namespace OverseerProtocol
 
             if (AutoExportGameData)
             {
-                // RunInitialExport se movió a ExportTriggerPatch para asegurar que los catálogos estén listos.
+                // RunInitialExport se movio a ExportTriggerPatch para asegurar que los catalogos esten listos.
             }
         }
     }

@@ -1,4 +1,5 @@
 using OverseerProtocol.Configuration;
+using OverseerProtocol.Core.Logging;
 using OverseerProtocol.Data.Models.Sync;
 
 namespace OverseerProtocol.Features;
@@ -10,7 +11,7 @@ public sealed class HandshakeFeature
         var fingerprints = new FingerprintFeature().ComputeCurrent();
         var lobbyRules = new LobbyRulesFeature().LoadOrCreate();
 
-        return new ProtocolHandshakeDefinition
+        var handshake = new ProtocolHandshakeDefinition
         {
             OverseerVersion = global::OverseerProtocol.Plugin.ModVersion,
             ActivePreset = fingerprints.ActivePreset,
@@ -26,14 +27,23 @@ public sealed class HandshakeFeature
             },
             EnabledFeatures =
             {
-                OPConfig.EnableItemOverrides.Value ? "item-overrides" : "item-overrides:disabled",
-                OPConfig.EnableSpawnOverrides.Value ? "spawn-overrides" : "spawn-overrides:disabled",
-                OPConfig.EnableMoonOverrides.Value ? "moon-overrides" : "moon-overrides:disabled",
+                OPConfig.EnableItemOverrides.Value ? "item-tuning" : "item-tuning:disabled",
+                OPConfig.EnableSpawnOverrides.Value ? "spawn-tuning" : "spawn-tuning:disabled",
+                OPConfig.EnableMoonOverrides.Value ? "moon-tuning" : "moon-tuning:disabled",
                 OPConfig.EnableRuntimeMultipliers.Value ? "runtime-multipliers" : "runtime-multipliers:disabled",
                 OPConfig.EnableProgressionStorage.Value ? "progression-storage" : "progression-storage:disabled",
                 OPConfig.EnablePerkCatalog.Value ? "perk-catalog" : "perk-catalog:disabled",
                 OPConfig.EnableRuntimeRulesLoading.Value ? "runtime-rules" : "runtime-rules:disabled"
             }
         };
+
+        OPLog.Info(
+            "Handshake",
+            $"Built local handshake: version={handshake.OverseerVersion}, preset={handshake.ActivePreset}, presetFingerprint={handshake.PresetFingerprint}, configFingerprint={handshake.ConfigFingerprint}, maxPlayers={handshake.Rules.MaxPlayers}, lateJoin={handshake.Rules.AllowLateJoin}, mode={handshake.Rules.LateJoinMode}, featureCount={handshake.EnabledFeatures.Count}");
+
+        foreach (var feature in handshake.EnabledFeatures)
+            OPLog.Info("Handshake", $"Handshake feature flag: {feature}");
+
+        return handshake;
     }
 }

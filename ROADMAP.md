@@ -12,23 +12,23 @@ Regla guia:
 - Todo hook delicado debe tener un feature flag de apagado.
 - Todo campo no verificado debe quedar marcado como data-only, reserved o experimental.
 
-## Estado Actual Confirmado
+## Estado Actual Implementado / Pendiente De Re-Verificacion
 
-### Gameplay / Runtime Muy Adelantado
+### Gameplay / Runtime Implementado, Pendiente De Re-Verificacion
 
-- Plugin BepInEx/Harmony y lifecycle inicial.
-- Exports: items, moons, enemies, spawn profiles y moon economy.
-- Item overrides, spawn overrides y moon overrides.
-- Validacion con warnings/errors, strict mode y dry-run.
-- Runtime multipliers para item weight, spawn rarity y route prices.
-- Runtime snapshot para reset/reload.
-- Runtime orchestrator para startup, reload y reset.
+- Plugin BepInEx/Harmony y lifecycle inicial implementados; pendiente re-verificacion en el entorno actual.
+- Exports: items, moons, enemies, spawn profiles y moon economy implementados; pendiente re-verificacion runtime.
+- Item tuning, spawn tuning y moon tuning implementados desde `items.json` y `moons/*.json`; pendiente re-verificacion runtime.
+- Validacion con warnings/errors, strict mode y dry-run implementada; pendiente re-verificacion runtime.
+- Runtime multipliers para item weight, spawn rarity y route prices implementados; pendiente re-verificacion runtime.
+- Runtime snapshot para reset/reload implementado; pendiente re-verificacion runtime.
+- Runtime orchestrator para startup, reload y reset implementado; pendiente re-verificacion runtime.
 
-### Producto / Data Layer Muy Adelantado
+### Producto / Data Layer Implementado, Pendiente De Re-Verificacion
 
 - `.cfg + JSON` como configuracion hibrida.
-- Presets con manifiesto, override templates y rules templates.
-- Paths organizados para exports, overrides, presets, saves, rules y definitions.
+- Presets con manifiesto y multipliers base.
+- Paths organizados para exports, tuning de usuario, presets, saves, rules y definitions.
 - Docs tecnicas por subsistema.
 - Node local para validacion JSON de samples.
 
@@ -51,7 +51,7 @@ Tareas:
 
 - Corregir errores de build cuando haya SDK/runtime disponible.
 - Verificar carga BepInEx sin excepciones.
-- Confirmar generacion de exports, presets, saves, rules y definitions.
+- Confirmar generacion de exports, tuning de usuario, presets, saves, rules y definitions.
 - Confirmar `DryRunOverrides`, strict validation y logs.
 - Confirmar snapshot, reset y reload.
 - Confirmar route price y moon risk en runtime.
@@ -66,7 +66,7 @@ Objetivo: convertir el nucleo en sistema usable por host/modpack maker.
 
 Tareas:
 
-- Formalizar precedencia: snapshot vanilla, preset, JSON overrides, `.cfg` multipliers/toggles.
+- Formalizar precedencia: snapshot vanilla, preset, user JSON tuning, `.cfg` multipliers/toggles.
 - Completar docs de IDs, fields y contratos.
 - Consolidar validacion comun y `AbortOnInvalidOverrideBlock`.
 - Anadir metricas por fase: aplicados, omitidos, warnings, errores y duracion.
@@ -122,9 +122,9 @@ Resultado:
 
 - Host/modder puede diagnosticar y recargar sin reiniciar.
 
-### Fase 5 - Perk Appliers Conservadores
+### Fase 5 - Persistencia Y Perk Appliers Conservadores
 
-Objetivo: convertir perks/progression en gameplay minimo y verificable.
+Objetivo: convertir progression/perks en persistencia y gameplay minimo verificable.
 
 Principio:
 
@@ -192,6 +192,12 @@ Gate C:
 
 Objetivo: investigar lobby grande sin contaminar el nucleo estable.
 
+Principio:
+
+- No forma parte del core stable.
+- No bloquea el roadmap principal.
+- Puede pausarse o archivarse si el costo real supera el beneficio.
+
 Tareas:
 
 - Rama experimental separada.
@@ -240,28 +246,43 @@ Resultado:
 
 - Solo avanzar si Fases 7-9 demuestran estabilidad real.
 
+## Criterios De Cierre Por Fase
+
+- Fase 1 se considera cerrada cuando el plugin compila, carga sin excepciones, genera exports/seeds esperados y valida snapshot/reload/reset en runtime.
+- Fase 2 se considera cerrada cuando la precedencia esta documentada, los logs muestran preset/config efectivos, las metricas por fase existen y los fingerprints aparecen en startup.
+- Fase 3 se considera cerrada cuando route price global/per-moon y travel discount aplican desde `runtime-rules.json` con campos marcados como `active`, `reserved` o `experimental`.
+- Fase 4 se considera cerrada cuando `EnableAdminTerminalCommands` permite apagar el hook, los comandos `op` funcionan y el flujo vanilla de Terminal no se rompe.
+- Fase 5 se considera cerrada cuando progression usa policy definida, los saves versionados migran sin corrupcion y los perk appliers conservadores tienen comandos debug.
+- Fase 6 se considera cerrada cuando el host puede configurar economia/run rules desde presets/rules y revisar el resumen efectivo con `op rules`.
+- Fase 7 se considera cerrada cuando host/cliente comparan handshake/fingerprints en pruebas reales y la politica warning/reject queda registrada en logs.
+- Fase 8 se considera cerrada cuando existe decision documentada de continuar, pausar o archivar expanded lobby segun evidencia tecnica.
+- Fase 9 se considera cerrada cuando `OrbitOnly` y `ShipOnly` funcionan en pruebas multi-cliente sin intentar recuperar estado de moon.
+- Fase 10 se considera cerrada solo si las fases 7-9 sostienen sync estable y hay evidencia suficiente para features multiplayer avanzadas.
+
 ## Tabla De Estado Por Subsistema
+
+Vocabulario base: `Implemented`, `Runtime Verified`, `Pending Runtime Verification`, `Partially Active`, `Data-Only`, `Service Ready`, `Planned`, `Experimental`, `Deferred`.
 
 | Subsistema | Estado |
 |---|---|
-| BepInEx/Harmony core | In Progress |
-| Exports/catalogs | In Progress |
-| Item overrides | In Progress |
-| Spawn overrides | In Progress |
-| Moon overrides | In Progress |
-| Validation layer | In Progress |
-| Runtime snapshot/reload/reset | In Progress |
-| Presets/config hibrida | In Progress |
-| Runtime rules | In Progress / Partially Active |
-| Admin commands | In Progress / Service Ready |
+| BepInEx/Harmony core | Implemented / Pending Runtime Verification |
+| Exports/catalogs | Implemented / Pending Runtime Verification |
+| Item tuning | Implemented / Pending Runtime Verification |
+| Spawn tuning | Implemented / Pending Runtime Verification |
+| Moon tuning | Implemented / Pending Runtime Verification |
+| Validation layer | Implemented / Pending Runtime Verification |
+| Runtime snapshot/reload/reset | Implemented / Pending Runtime Verification |
+| Presets/config hibrida | Implemented / Pending Runtime Verification |
+| Runtime rules | Partially Active / Experimental |
+| Admin commands | Implemented / Service Ready |
 | Terminal hook | Experimental / Disabled By Default |
-| Progression store | Planned / Data-Only |
-| Perk catalog | Planned / Data-Only |
+| Progression store | Data-Only |
+| Perk catalog | Data-Only |
 | Perk appliers | Planned |
-| Lobby rules | Planned / Data-Only |
-| Fingerprints/handshake | In Progress / Comparison Ready |
-| Host/client sync | Experimental / Contract + Diagnostics |
-| Expanded lobby | Experimental / Reflection Scaffold |
+| Lobby rules | Data-Only |
+| Fingerprints/handshake | Implemented / Comparison Ready |
+| Host/client sync | Experimental / Diagnostics Only |
+| Expanded lobby | Experimental / Research Scaffold |
 | Late join | Experimental / Policy Scaffold |
 | Spectator | Experimental / Diagnostics Scaffold |
 | Cosmetics/clothing/hotbar rework | Deferred |
@@ -293,7 +314,7 @@ Resultado:
 - Exports se generan correctamente.
 - JSON seeds aparecen en folders esperados.
 - Dry-run valida sin mutar.
-- Overrides aplican con logs claros.
+- Tuning de usuario aplica con logs claros.
 - Snapshot reset/reload funciona.
 - Route prices y moon risk cambian in-game.
 - Terminal hook no rompe comandos vanilla.
@@ -302,8 +323,21 @@ Resultado:
 
 ## Supuestos Oficiales
 
-- `default` usa `overseer-data/overrides` y `overseer-data/rules`.
+- `default` usa `overseer-data/items.json`, `overseer-data/moons/*.json` y `overseer-data/rules`.
 - Presets no sobrescriben archivos editados por usuario.
 - Todo hook delicado debe tener config para apagarse.
 - Todo campo no verificado debe quedar como data-only, reserved o experimental.
 - La prioridad del proyecto es estabilidad, mantenibilidad y observabilidad antes que paridad rapida con AdvancedCompany.
+
+## Compatibilidad Y Versionado
+
+- Este roadmap asume la version actual de Lethal Company validada contra la rama principal del mod.
+- Cualquier cambio fuerte en assemblies internos del juego puede mover subsistemas de vuelta a `Pending Runtime Verification`.
+- Todo contrato JSON persistente debe incluir `schemaVersion`.
+- Cambios incompatibles de schema deben documentar migracion, fallback o regeneracion segura.
+
+## Rollback Policy
+
+- Toda mutacion runtime debe ser reversible cuando sea tecnicamente posible.
+- Snapshot/reset/reload tienen prioridad sobre acumulacion de parches incrementales dificiles de auditar.
+- Ante error de validacion critica, el mod debe preferir omitir el bloque afectado o abortar segun configuracion antes que dejar estado parcial silencioso.

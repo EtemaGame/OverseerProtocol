@@ -31,8 +31,8 @@ op validate
 - `op preset`: Reports the active preset from `.cfg`.
 - `op paths`: Reports OverseerProtocol data roots.
 - `op export`: Runs catalog export immediately.
-- `op reload`: Restores the captured vanilla snapshot, then reapplies current config, presets, overrides, and multipliers.
-- `op reset`: Restores the captured vanilla runtime snapshot without reapplying overrides.
+- `op reload`: Restores the captured vanilla snapshot, then reapplies current config, presets, user tuning, and multipliers.
+- `op reset`: Restores the captured vanilla runtime snapshot without reapplying user tuning.
 - `op fingerprint`: Reports the current preset/config fingerprints.
 - `op rules`: Reports current lobby/runtime rules summary.
 - `op perks`: Reports current perk catalog and progression summary.

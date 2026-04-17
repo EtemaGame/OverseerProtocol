@@ -13,31 +13,37 @@ public sealed class MoonOverrideApplier
     {
         if (collection?.Overrides == null || collection.Overrides.Count == 0)
         {
-            OPLog.Info("Overrides", "No moon overrides found to apply.");
+            OPLog.Info("Overrides", "No moon tuning entries found to apply.");
             return;
         }
 
         if (StartOfRound.Instance == null || StartOfRound.Instance.levels == null)
         {
-            OPLog.Warning("Overrides", "StartOfRound levels not available. Aborting moon overrides.");
+            OPLog.Warning("Overrides", "StartOfRound levels not available. Aborting moon tuning.");
             return;
         }
 
         var routeNodes = Resources.FindObjectsOfTypeAll<TerminalNode>() ?? Array.Empty<TerminalNode>();
         var appliedMoonCount = 0;
         var routePriceMutationCount = 0;
+        var skippedMoonCount = 0;
 
-        OPLog.Info("Overrides", $"Applying {collection.Overrides.Count} moon overrides.");
+        OPLog.Info("Overrides", $"Applying {collection.Overrides.Count} moon tuning entries.");
 
         foreach (var moonOverride in collection.Overrides)
         {
             if (moonOverride == null || string.IsNullOrWhiteSpace(moonOverride.MoonId))
+            {
+                OPLog.Warning("Overrides", "Null moon tuning entry or empty moonId was skipped.");
+                skippedMoonCount++;
                 continue;
+            }
 
             var levelIndex = FindLevelIndex(moonOverride.MoonId);
             if (levelIndex < 0)
             {
                 OPLog.Warning("Overrides", $"Moon with ID '{moonOverride.MoonId}' not found in runtime catalog. Skipping.");
+                skippedMoonCount++;
                 continue;
             }
 
@@ -46,16 +52,20 @@ public sealed class MoonOverrideApplier
 
             if (!string.IsNullOrWhiteSpace(moonOverride.RiskLabel))
             {
-                OPLog.Debug("Overrides", $"Overriding {level.name}.riskLevel: {level.riskLevel} -> {moonOverride.RiskLabel}");
+                OPLog.Info("Overrides", $"Overriding {level.name}.riskLevel via riskLabel: {level.riskLevel} -> {moonOverride.RiskLabel}");
                 level.riskLevel = moonOverride.RiskLabel;
                 applied = true;
             }
             else if (moonOverride.RiskLevel.HasValue)
             {
                 var riskLabel = FormatRiskLevel(moonOverride.RiskLevel.Value);
-                OPLog.Debug("Overrides", $"Overriding {level.name}.riskLevel: {level.riskLevel} -> {riskLabel}");
+                OPLog.Info("Overrides", $"Overriding {level.name}.riskLevel via riskLevel={moonOverride.RiskLevel.Value}: {level.riskLevel} -> {riskLabel}");
                 level.riskLevel = riskLabel;
                 applied = true;
+            }
+            else
+            {
+                OPLog.Info("Overrides", $"Moon tuning for '{level.name}' has no riskLevel/riskLabel change.");
             }
 
             if (moonOverride.RoutePrice.HasValue)
@@ -67,14 +77,21 @@ public sealed class MoonOverrideApplier
                 if (updatedNodes == 0)
                     OPLog.Warning("Overrides", $"No TerminalNode route price entries found for moon '{level.name}' at level index {levelIndex}.");
             }
+            else
+            {
+                OPLog.Info("Overrides", $"Moon tuning for '{level.name}' has no routePrice change.");
+            }
 
             if (applied)
                 appliedMoonCount++;
             else
-                OPLog.Warning("Overrides", $"Moon override for '{level.name}' did not mutate any runtime fields.");
+            {
+                OPLog.Warning("Overrides", $"Moon tuning for '{level.name}' did not mutate any runtime fields.");
+                skippedMoonCount++;
+            }
         }
 
-        OPLog.Info("Overrides", $"Successfully applied moon overrides to {appliedMoonCount} moons and {routePriceMutationCount} route nodes.");
+        OPLog.Info("Overrides", $"Successfully applied moon tuning to {appliedMoonCount} moons and {routePriceMutationCount} route nodes. skipped={skippedMoonCount}");
     }
 
     private static int FindLevelIndex(string moonId)
@@ -98,7 +115,7 @@ public sealed class MoonOverrideApplier
 
         foreach (var node in routeNodes.Where(node => node != null && node.buyRerouteToMoon == levelIndex))
         {
-            OPLog.Debug("Overrides", $"Overriding route node {node.name}.itemCost: {node.itemCost} -> {routePrice}");
+            OPLog.Info("Overrides", $"Overriding route node {node.name}.itemCost: {node.itemCost} -> {routePrice}");
             node.itemCost = routePrice;
             appliedCount++;
         }

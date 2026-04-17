@@ -53,12 +53,14 @@ public sealed class EnemyTypeRegistry
             }
 
             _registry.Add(id, type);
-            OPLog.Debug("Registry", $"Registered Enemy: {id} (Source: {moonId} {poolName})");
+            OPLog.Info("Registry", $"Registered Enemy: {id} (Source: {moonId} {poolName})");
         }
     }
 
     public EnemyType? GetEnemy(string id)
     {
-        return _registry.TryGetValue(id, out var type) ? type : null;
+        var found = _registry.TryGetValue(id, out var type);
+        OPLog.Info("Registry", $"Enemy lookup: id={id}, found={found}");
+        return found ? type : null;
     }
 }

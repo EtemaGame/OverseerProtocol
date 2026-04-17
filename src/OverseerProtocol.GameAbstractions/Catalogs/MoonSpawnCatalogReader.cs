@@ -34,6 +34,9 @@ public class MoonSpawnCatalogReader
             };
 
             profiles.Add(profile);
+            OPLog.Info(
+                "Spawns",
+                $"Catalog spawn profile: moon={profile.MoonId}, inside={profile.InsideEnemies.Count}, outside={profile.OutsideEnemies.Count}, daytime={profile.DaytimeEnemies.Count}");
         }
 
         return profiles;
@@ -64,6 +67,7 @@ public class MoonSpawnCatalogReader
                 EnemyId = entry.enemyType.name,
                 Rarity = entry.rarity
             });
+            OPLog.Info("Spawns", $"Catalog spawn entry: moon={moonId}, pool={poolName}, enemy={entry.enemyType.name}, rarity={entry.rarity}");
         }
 
         return entries;

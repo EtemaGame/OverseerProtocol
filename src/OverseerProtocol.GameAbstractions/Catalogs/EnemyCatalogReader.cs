@@ -67,6 +67,9 @@ public class EnemyCatalogReader
                     IsDaytimeEnemy = type.isDaytimeEnemy
                 };
                 map[key] = def;
+                OPLog.Info(
+                    "Enemies",
+                    $"Catalog enemy discovered: id={def.Id}, displayName={def.DisplayName}, power={def.PowerLevel}, maxCount={def.MaxCount}, outside={def.IsOutsideEnemy}, daytime={def.IsDaytimeEnemy}");
             }
 
             // Aggregate observations

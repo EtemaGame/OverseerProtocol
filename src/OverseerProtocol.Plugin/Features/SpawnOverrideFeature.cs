@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO;
 using OverseerProtocol.Configuration;
 using OverseerProtocol.Core.Logging;
 using OverseerProtocol.Core.Paths;
@@ -6,6 +7,8 @@ using OverseerProtocol.Core.Serialization;
 using OverseerProtocol.Data.Models;
 using OverseerProtocol.Data.Models.Enemies;
 using OverseerProtocol.Data.Models.Moons;
+using OverseerProtocol.Data.Models.Spawns;
+using OverseerProtocol.Data.Models.UserConfig;
 using OverseerProtocol.GameAbstractions.Overrides;
 
 namespace OverseerProtocol.Features;
@@ -25,45 +28,111 @@ public sealed class SpawnOverrideFeature
 
     public void ApplyOverrides(string presetName)
     {
-        // 1. Prepare Registry
         _registry.BuildRegistry();
 
-        // 2. Load Configuration
-        var path = OPPaths.GetSpawnOverridePath(presetName);
-        OPLog.Info("Overrides", $"Loading spawn overrides from: {path}");
-        
-        var collection = JsonFileReader.Read<SpawnOverrideCollection>(path);
-        
-        if (collection == null)
+        OPLog.Info("Overrides", $"Loading moon spawn tuning files from: {OPPaths.MoonConfigRoot}");
+        var collection = BuildOverrideCollection();
+
+        if (collection.Overrides.Count == 0)
         {
-            OPLog.Info("Overrides", "No valid spawns.override.json found or file is empty.");
+            OPLog.Info("Overrides", "No active spawn tuning entries found in moons/*.json.");
             return;
         }
 
-        // 3. Pre-validation and reference resolution
+        OPLog.Info("Overrides", $"Spawn tuning loaded: schemaVersion={collection.SchemaVersion}, moonTuningCount={collection.Overrides.Count}");
+
         var references = LoadReferenceCatalog();
+        OPLog.Info("Validation", $"Spawn validation references: exportedMoons={references.MoonIds.Count}, exportedEnemies={references.EnemyIds.Count}");
         var validationResult = _validator.Validate(collection, references);
         validationResult.Report.WriteToLog("Validation");
 
         var abortOnWarnings = OPConfig.StrictValidation.Value || OPConfig.AbortOnInvalidOverrideBlock.Value;
+        OPLog.Info("Validation", $"Spawn validation policy: strict={OPConfig.StrictValidation.Value}, abortOnInvalidBlock={OPConfig.AbortOnInvalidOverrideBlock.Value}, abortOnWarnings={abortOnWarnings}, canApply={validationResult.CanApplyWithStrictMode(abortOnWarnings)}");
         if (!validationResult.CanApplyWithStrictMode(abortOnWarnings))
         {
             var reason = abortOnWarnings && validationResult.Report.WarningCount > 0
-                ? "strict override validation is enabled and warnings were reported"
+                ? "strict tuning validation is enabled and warnings were reported"
                 : "critical validation errors were reported";
 
-            OPLog.Warning("Validation", $"Spawn override collection was not applied because {reason}.");
+            OPLog.Warning("Validation", $"Spawn tuning was not applied because {reason}.");
             return;
         }
 
-        // 4. Application
         if (OPConfig.DryRunOverrides.Value)
         {
-            OPLog.Info("Overrides", $"Dry-run enabled. {validationResult.Collection.Overrides.Count} moon spawn overrides validated; no runtime spawn mutations applied.");
+            OPLog.Info("Overrides", $"Dry-run enabled. {validationResult.Collection.Overrides.Count} moon spawn tuning entries validated; no runtime spawn mutations applied.");
             return;
         }
 
         _applier.Apply(validationResult.Collection);
+    }
+
+    private static SpawnOverrideCollection BuildOverrideCollection()
+    {
+        var collection = new SpawnOverrideCollection();
+        if (!Directory.Exists(OPPaths.MoonConfigRoot))
+            return collection;
+
+        foreach (var path in Directory.GetFiles(OPPaths.MoonConfigRoot, "*.json"))
+        {
+            var config = JsonFileReader.Read<UserMoonConfigFile>(path);
+            if (config == null || string.IsNullOrWhiteSpace(config.MoonId))
+                continue;
+
+            if (!config.Enabled)
+            {
+                OPLog.Info("Overrides", $"Moon tuning disabled for '{config.MoonId}'. Spawn pools skipped.");
+                continue;
+            }
+
+            if (config.MissingFromRuntime)
+            {
+                OPLog.Warning("Overrides", $"Moon tuning '{config.MoonId}' is marked missingFromRuntime. Spawn pools skipped.");
+                continue;
+            }
+
+            var moonOverride = new MoonSpawnOverride
+            {
+                MoonId = config.MoonId,
+                InsideEnemies = ResolvePool(config.MoonId, "insideEnemies", config.Spawns?.InsideEnemies),
+                OutsideEnemies = ResolvePool(config.MoonId, "outsideEnemies", config.Spawns?.OutsideEnemies),
+                DaytimeEnemies = ResolvePool(config.MoonId, "daytimeEnemies", config.Spawns?.DaytimeEnemies)
+            };
+
+            if (moonOverride.InsideEnemies == null &&
+                moonOverride.OutsideEnemies == null &&
+                moonOverride.DaytimeEnemies == null)
+            {
+                OPLog.Info("Overrides", $"Moon '{config.MoonId}' spawn pools are all mode=keep.");
+                continue;
+            }
+
+            collection.Overrides.Add(moonOverride);
+        }
+
+        return collection;
+    }
+
+    private static List<SpawnEntry>? ResolvePool(string moonId, string poolName, SpawnPoolConfig? pool)
+    {
+        var mode = string.IsNullOrWhiteSpace(pool?.Mode) ? "keep" : pool!.Mode.Trim();
+        if (string.Equals(mode, "keep", System.StringComparison.OrdinalIgnoreCase))
+            return null;
+
+        if (string.Equals(mode, "clear", System.StringComparison.OrdinalIgnoreCase))
+        {
+            OPLog.Info("Overrides", $"Moon '{moonId}' {poolName} mode=clear. Runtime pool will be empty.");
+            return new List<SpawnEntry>();
+        }
+
+        if (string.Equals(mode, "replace", System.StringComparison.OrdinalIgnoreCase))
+        {
+            OPLog.Info("Overrides", $"Moon '{moonId}' {poolName} mode=replace. Runtime pool entries={pool?.Entries?.Count ?? 0}.");
+            return pool?.Entries ?? new List<SpawnEntry>();
+        }
+
+        OPLog.Warning("Overrides", $"Moon '{moonId}' {poolName} has unknown mode '{mode}'. Keeping vanilla/current pool.");
+        return null;
     }
 
     private SpawnOverrideReferenceCatalog LoadReferenceCatalog()
@@ -83,7 +152,7 @@ public sealed class SpawnOverrideFeature
                     catalog.EnemyIds.Add(enemy.Id);
             }
 
-            OPLog.Info("Validation", $"Loaded {catalog.EnemyIds.Count} exported enemy IDs for spawn override validation.");
+            OPLog.Info("Validation", $"Loaded {catalog.EnemyIds.Count} exported enemy IDs for spawn tuning validation.");
         }
 
         var moons = JsonFileReader.Read<List<MoonDefinition>>(OPPaths.MoonExportPath);
@@ -99,7 +168,7 @@ public sealed class SpawnOverrideFeature
                     catalog.MoonIds.Add(moon.Id);
             }
 
-            OPLog.Info("Validation", $"Loaded {catalog.MoonIds.Count} exported moon IDs for spawn override validation.");
+            OPLog.Info("Validation", $"Loaded {catalog.MoonIds.Count} exported moon IDs for spawn tuning validation.");
         }
 
         return catalog;

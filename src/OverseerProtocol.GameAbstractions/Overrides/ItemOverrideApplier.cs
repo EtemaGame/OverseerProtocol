@@ -11,43 +11,50 @@ public sealed class ItemOverrideApplier
     {
         if (collection?.Overrides == null || collection.Overrides.Count == 0)
         {
-            OPLog.Info("Overrides", "No item overrides found to apply.");
+            OPLog.Info("Overrides", "No item tuning entries found to apply.");
             return;
         }
 
-        // Safety checks per user request Adjustment 1
+        // Runtime safety checks before applying user tuning.
         if (StartOfRound.Instance == null)
         {
-            OPLog.Warning("Overrides", "StartOfRound.Instance is null. Aborting override application.");
+            OPLog.Warning("Overrides", "StartOfRound.Instance is null. Aborting item tuning application.");
             return;
         }
 
         if (StartOfRound.Instance.allItemsList == null)
         {
-            OPLog.Warning("Overrides", "allItemsList is null. Aborting override application.");
+            OPLog.Warning("Overrides", "allItemsList is null. Aborting item tuning application.");
             return;
         }
 
         var items = StartOfRound.Instance.allItemsList.itemsList;
         if (items == null)
         {
-            OPLog.Warning("Overrides", "itemsList is null. Aborting override application.");
+            OPLog.Warning("Overrides", "itemsList is null. Aborting item tuning application.");
             return;
         }
 
-        OPLog.Info("Overrides", $"Applying {collection.Overrides.Count} overrides to catalog.");
+        OPLog.Info("Overrides", $"Applying {collection.Overrides.Count} item tuning entries to catalog.");
 
         var appliedCount = 0;
+        var skippedCount = 0;
         foreach (var overrideDef in collection.Overrides)
         {
-            if (string.IsNullOrWhiteSpace(overrideDef.Id)) continue;
+            if (string.IsNullOrWhiteSpace(overrideDef.Id))
+            {
+                OPLog.Warning("Overrides", "Item tuning entry with empty id was skipped.");
+                skippedCount++;
+                continue;
+            }
 
-            // Matching Logic: Using item.name (exported ID) per user request Adjustment 2
+            // item.name is the stable exported ID used in user tuning files.
             var targetItem = items.Find(i => i != null && i.name == overrideDef.Id);
 
             if (targetItem == null)
             {
                 OPLog.Warning("Overrides", $"Item with ID '{overrideDef.Id}' not found in catalog. Skipping.");
+                skippedCount++;
                 continue;
             }
 
@@ -55,21 +62,24 @@ public sealed class ItemOverrideApplier
             appliedCount++;
         }
 
-        OPLog.Info("Overrides", $"Successfully applied {appliedCount} item overrides.");
+        OPLog.Info("Overrides", $"Successfully applied {appliedCount} item tuning entries. skipped={skippedCount}");
     }
 
     private void ApplyToItem(Item item, ItemOverrideDefinition def)
     {
         if (def.CreditsWorth.HasValue)
         {
-            OPLog.Debug("Overrides", $"Overriding {item.name}.creditsWorth: {item.creditsWorth} -> {def.CreditsWorth.Value}");
+            OPLog.Info("Overrides", $"Overriding {item.name}.creditsWorth: {item.creditsWorth} -> {def.CreditsWorth.Value}");
             item.creditsWorth = def.CreditsWorth.Value;
         }
 
         if (def.Weight.HasValue)
         {
-            OPLog.Debug("Overrides", $"Overriding {item.name}.weight: {item.weight} -> {def.Weight.Value}");
+            OPLog.Info("Overrides", $"Overriding {item.name}.weight: {item.weight:0.###} -> {def.Weight.Value:0.###}");
             item.weight = def.Weight.Value;
         }
+
+        if (!def.CreditsWorth.HasValue && !def.Weight.HasValue)
+            OPLog.Warning("Overrides", $"Item tuning entry for {item.name} had no active runtime fields.");
     }
 }

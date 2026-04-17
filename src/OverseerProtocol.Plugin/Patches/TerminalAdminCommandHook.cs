@@ -39,10 +39,14 @@ internal static class TerminalAdminCommandHook
             if (!OPConfig.EnableAdminTerminalCommands.Value)
                 return true;
 
-            var input = TryReadTerminalText(__instance);
+            var input = TryReadSubmittedTerminalText(__instance);
+            OPLog.Info("Admin", $"Terminal hook captured input: '{input}'");
             var result = CommandService.Execute(input);
             if (!result.Handled)
+            {
+                OPLog.Info("Admin", "Terminal hook did not handle input. Vanilla terminal flow continues.");
                 return true;
+            }
 
             __result = CreateResponseNode(result.Message);
             OPLog.Info("Admin", $"Handled admin terminal command: {input}");
@@ -55,22 +59,71 @@ internal static class TerminalAdminCommandHook
         }
     }
 
-    private static string TryReadTerminalText(Terminal terminal)
+    private static string TryReadSubmittedTerminalText(Terminal terminal)
+    {
+        var fullText = TryReadTerminalScreenText(terminal);
+        var textAddedField = AccessTools.Field(typeof(Terminal), "textAdded");
+        if (textAddedField?.GetValue(terminal) is int textAdded &&
+            textAdded > 0 &&
+            textAdded <= fullText.Length)
+        {
+            OPLog.Info("Admin", $"Read terminal input from textAdded span. textAdded={textAdded}.");
+            return SanitizeSubmittedInput(fullText.Substring(fullText.Length - textAdded));
+        }
+
+        OPLog.Info("Admin", "Terminal textAdded was unavailable or out of range. Falling back to last visible terminal line.");
+        return ExtractLastVisibleInputLine(fullText);
+    }
+
+    private static string TryReadTerminalScreenText(Terminal terminal)
     {
         var screenTextField = AccessTools.Field(typeof(Terminal), "screenText");
         var screenText = screenTextField?.GetValue(terminal);
         if (screenText == null)
+        {
+            OPLog.Warning("Admin", "Could not read Terminal.screenText. Returning empty input.");
             return "";
+        }
 
         var textProperty = screenText.GetType().GetProperty("text", BindingFlags.Instance | BindingFlags.Public);
         if (textProperty?.GetValue(screenText) is string textFromProperty)
+        {
+            OPLog.Info("Admin", "Read terminal input from screenText.text property.");
             return textFromProperty;
+        }
 
         var textField = screenText.GetType().GetField("text", BindingFlags.Instance | BindingFlags.Public);
         if (textField?.GetValue(screenText) is string textFromField)
+        {
+            OPLog.Info("Admin", "Read terminal input from screenText.text field.");
             return textFromField;
+        }
+
+        OPLog.Warning("Admin", "Terminal screenText has no readable text property/field. Returning empty input.");
+        return "";
+    }
+
+    private static string ExtractLastVisibleInputLine(string fullText)
+    {
+        var normalized = (fullText ?? "").Replace("\r\n", "\n").Replace('\r', '\n');
+        var lines = normalized.Split('\n');
+        for (var index = lines.Length - 1; index >= 0; index--)
+        {
+            var candidate = SanitizeSubmittedInput(lines[index]);
+            if (!string.IsNullOrWhiteSpace(candidate))
+                return candidate;
+        }
 
         return "";
+    }
+
+    private static string SanitizeSubmittedInput(string input)
+    {
+        var trimmed = (input ?? "").Trim();
+        if (trimmed.StartsWith(">", StringComparison.Ordinal))
+            trimmed = trimmed.Substring(1).TrimStart();
+
+        return trimmed;
     }
 
     private static TerminalNode CreateResponseNode(string message)
@@ -78,6 +131,7 @@ internal static class TerminalAdminCommandHook
         var node = ScriptableObject.CreateInstance<TerminalNode>();
         node.displayText = message + "\n";
         node.clearPreviousText = true;
+        OPLog.Info("Admin", $"Created Terminal response node with {message.Length} chars.");
         return node;
     }
 }

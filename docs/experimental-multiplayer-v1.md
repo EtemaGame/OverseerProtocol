@@ -40,4 +40,4 @@ ExperimentalMaxPlayers = 4
 - All multiplayer experiments are disabled by default.
 - `LateJoinMode = Moon` is blocked by policy until recovery hooks exist.
 - Reflection patches log what they find and no-op when fields/methods do not exist.
-- This layer should remain separable from the stable data-driven override core.
+- This layer should remain separable from the stable data-driven tuning core.

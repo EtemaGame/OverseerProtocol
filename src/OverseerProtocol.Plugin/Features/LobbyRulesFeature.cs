@@ -28,16 +28,28 @@ public sealed class LobbyRulesFeature
     private static LobbyRulesDefinition Normalize(LobbyRulesDefinition rules)
     {
         if (rules.SchemaVersion <= 0)
+        {
+            OPLog.Info("LobbyRules", $"Normalizing schemaVersion {rules.SchemaVersion} -> 1");
             rules.SchemaVersion = 1;
+        }
 
         if (rules.MaxPlayers < 1)
+        {
+            OPLog.Warning("LobbyRules", $"maxPlayers={rules.MaxPlayers} is below 1. Clamping to 1.");
             rules.MaxPlayers = 1;
+        }
 
         if (rules.MaxPlayers > 64)
+        {
+            OPLog.Warning("LobbyRules", $"maxPlayers={rules.MaxPlayers} is above 64. Clamping to 64.");
             rules.MaxPlayers = 64;
+        }
 
         if (string.IsNullOrWhiteSpace(rules.LateJoinMode))
+        {
+            OPLog.Info("LobbyRules", "LateJoinMode was empty. Normalizing to Disabled.");
             rules.LateJoinMode = "Disabled";
+        }
 
         rules.LateJoinMode = rules.LateJoinMode.Trim();
 

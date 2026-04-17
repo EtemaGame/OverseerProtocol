@@ -18,7 +18,7 @@ namespace OverseerProtocol.Export
 
             var path = OPPaths.ItemExportPath;
             JsonFileWriter.Write(path, items);
-            OPLog.Info("Export", $"Desplegado catálogo de items ({items.Count} registros) en {path}");
+            OPLog.Info("Export", $"Wrote item catalog: count={items.Count}, path={path}");
         }
     }
 }

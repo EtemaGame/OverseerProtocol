@@ -3,7 +3,7 @@
 OverseerProtocol now has two configuration layers:
 
 - `.cfg`: Simple user-facing switches, preset selection, and broad multipliers.
-- JSON: Detailed entity-level overrides for items and spawns.
+- JSON: Detailed entity-level tuning for items, moons, and spawn pools.
 
 ## BepInEx Config
 
@@ -63,38 +63,26 @@ AdminCommandPrefix = op
 
 ## Preset Resolution
 
-`ActivePreset = default` reads JSON overrides from:
+`ActivePreset` selects preset metadata and default multipliers. User-facing entity tuning is global to the current profile and lives in:
 
 ```text
-BepInEx/plugins/OverseerProtocol/overseer-data/overrides/
+BepInEx/plugins/OverseerProtocol/overseer-data/items.json
+BepInEx/plugins/OverseerProtocol/overseer-data/moons/<MoonId>.json
+BepInEx/plugins/OverseerProtocol/overseer-data/utility-catalog.json
 ```
 
-Any other preset name reads JSON overrides from:
-
-```text
-BepInEx/plugins/OverseerProtocol/overseer-data/presets/<preset-name>/overrides/
-```
-
-For example:
+For example, this selects the `hardcore` preset multipliers:
 
 ```ini
 [General]
 ActivePreset = hardcore
 ```
 
-Reads:
-
-```text
-BepInEx/plugins/OverseerProtocol/overseer-data/presets/hardcore/overrides/items.override.json
-BepInEx/plugins/OverseerProtocol/overseer-data/presets/hardcore/overrides/moons.override.json
-BepInEx/plugins/OverseerProtocol/overseer-data/presets/hardcore/overrides/spawns.override.json
-```
-
 Preset names are sanitized before becoming folder names.
 
 ## Runtime Multipliers
 
-Runtime multipliers run after JSON overrides.
+Runtime multipliers run after user JSON tuning.
 
 - `ItemWeightMultiplier`: Multiplies every runtime item `weight`.
 - `SpawnRarityMultiplier`: Multiplies every runtime spawn rarity in inside, outside, and daytime pools.
@@ -102,15 +90,15 @@ Runtime multipliers run after JSON overrides.
 - Spawn rarities are clamped to `0..1000`.
 - Multiplier values are clamped by config to `0..10`.
 
-Exports still happen before overrides and multipliers when `EnableDataExport = true`, so exported catalogs remain the vanilla snapshot.
+Exports still happen before tuning and multipliers when `EnableDataExport = true`, so exported catalogs remain the vanilla snapshot.
 
 ## Validation Controls
 
-- `StrictValidation`: when enabled, any validation warning aborts the affected override flow. Validation errors always abort.
-- `DryRunOverrides`: when enabled, the mod still exports and validates configuration, but it does not apply item overrides, spawn overrides, or runtime multipliers.
-- `AbortOnInvalidOverrideBlock`: strict policy flag. When enabled, validation warnings abort the affected override flow instead of applying the sanitized subset.
+- `StrictValidation`: when enabled, any validation warning aborts the affected tuning flow. Validation errors always abort.
+- `DryRunOverrides`: when enabled, the mod still exports and validates configuration, but it does not apply item tuning, spawn tuning, moon tuning, runtime multipliers, or runtime rules.
+- `AbortOnInvalidOverrideBlock`: strict policy flag. When enabled, validation warnings abort the affected tuning flow instead of applying the sanitized subset.
 
-Before export, OverseerProtocol captures a lightweight in-memory runtime snapshot for item values and moon spawn pools. The snapshot is restored after export and before overrides, keeping the exported catalogs and the mutation baseline aligned with vanilla runtime state.
+Before export, OverseerProtocol captures a lightweight in-memory runtime snapshot for item values and moon spawn pools. The snapshot is restored after export and before user tuning, keeping the exported catalogs and the mutation baseline aligned with vanilla runtime state.
 
 ## Progression Storage
 
@@ -120,7 +108,7 @@ Before export, OverseerProtocol captures a lightweight in-memory runtime snapsho
 BepInEx/plugins/OverseerProtocol/overseer-data/saves/progression.json
 ```
 
-This is data-only for now. Runtime perks are intentionally deferred until the override and admin tooling layers are stable.
+This is data-only for now. Runtime perks are intentionally deferred until the tuning and admin tooling layers are stable.
 
 ## Lobby Rules
 

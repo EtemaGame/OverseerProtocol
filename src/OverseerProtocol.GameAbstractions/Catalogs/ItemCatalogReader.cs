@@ -52,6 +52,9 @@ public class ItemCatalogReader
             };
 
             definitions.Add(def);
+            OPLog.Info(
+                "Items",
+                $"Catalog item: id={def.Id}, displayName={def.DisplayName}, creditsWorth={def.CreditsWorth}, weight={def.Weight:0.###}, isScrap={def.IsScrap}, conductive={def.IsConductiveMetal}, requiresBattery={def.RequiresBattery}");
         }
 
         return definitions;

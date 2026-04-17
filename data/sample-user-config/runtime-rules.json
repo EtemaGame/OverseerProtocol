@@ -3,7 +3,7 @@
   "economy": {
     "quotaMultiplier": 1,
     "deadlineMultiplier": 1,
-    "travelDiscountMultiplier": 1,
+    "travelDiscountMultiplier": 0.5,
     "scrapValueMultiplier": 1,
     "preserveShipLootOnTeamWipe": false
   },
@@ -21,5 +21,12 @@
     "floodedRewardMultiplier": 1,
     "eclipsedRewardMultiplier": 1
   },
-  "moonRules": {}
+  "moonRules": {
+    "ExperimentationLevel": {
+      "routePriceMultiplier": 2,
+      "scrapValueMultiplier": 1,
+      "spawnRarityMultiplier": 1,
+      "weatherRewardMultiplier": 1
+    }
+  }
 }

@@ -9,6 +9,7 @@ public static class Bootstrapper
     {
         OPLog.Initialize(logger);
         OPPaths.EnsureDirectories();
-        OPLog.Info("Directorios y Core de OverseerProtocol preparados.");
+        OPLog.Info("Bootstrap", "Directorios y core de OverseerProtocol preparados.");
+        OPLog.Info("Bootstrap", $"Data root asegurado en {OPPaths.DataRoot}");
     }
 }

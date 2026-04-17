@@ -13,9 +13,8 @@ OverseerProtocol now computes stable fingerprints for future host/client compati
 The preset fingerprint hashes these files for the active preset:
 
 - `preset.json`
-- `items.override.json`
-- `spawns.override.json`
-- `moons.override.json`
+- `overseer-data/items.json`
+- `overseer-data/moons/*.json`
 - `lobby-rules.json`
 - `runtime-rules.json`
 

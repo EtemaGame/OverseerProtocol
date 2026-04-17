@@ -16,12 +16,6 @@ They are written to:
 BepInEx/plugins/OverseerProtocol/overseer-data/presets/<preset-id>/preset.json
 ```
 
-Each preset also gets an `overrides` folder for detailed JSON overrides:
-
-```text
-BepInEx/plugins/OverseerProtocol/overseer-data/presets/<preset-id>/overrides/
-```
-
 ## Selecting A Preset
 
 Set `ActivePreset` in `BepInEx/config/com.overseerprotocol.core.cfg`:
@@ -48,16 +42,16 @@ When selected, a preset can provide default runtime multipliers:
 
 If the `.cfg` multiplier is still `1`, the preset multiplier is used. If the `.cfg` multiplier is changed to another value, the user value wins. This applies to item weight, spawn rarity, and route price multipliers.
 
-## Advanced Overrides
+## User Tuning
 
-Detailed JSON still uses the active preset folder:
+Detailed entity tuning is intentionally kept in the main profile files:
 
 ```text
-presets/hardcore/overrides/items.override.json
-presets/hardcore/overrides/moons.override.json
-presets/hardcore/overrides/spawns.override.json
+overseer-data/items.json
+overseer-data/moons/<MoonId>.json
+overseer-data/utility-catalog.json
 ```
 
 V1 presets intentionally avoid bundled item/enemy IDs so they remain safe across vanilla updates and modded catalogs.
 
-Built-in presets seed empty override templates if missing. Existing user-edited manifests or override files are never overwritten.
+Built-in presets seed manifests if missing. Existing user-edited manifests and user tuning files are never overwritten blindly; observed fields are regenerated while editable fields are preserved.

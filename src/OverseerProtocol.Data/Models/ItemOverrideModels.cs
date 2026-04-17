@@ -4,6 +4,7 @@ namespace OverseerProtocol.Data.Models;
 
 public sealed class ItemOverrideCollection
 {
+    public int SchemaVersion { get; set; } = 1;
     public List<ItemOverrideDefinition> Overrides { get; set; } = new();
 }
 

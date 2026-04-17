@@ -12,18 +12,28 @@ public sealed class PerkCatalogFeature
     {
         var catalog = JsonFileReader.Read<PerkCatalogDefinition>(OPPaths.PerkCatalogPath);
         if (catalog != null)
-            return Normalize(catalog);
+        {
+            var normalized = Normalize(catalog);
+            OPLog.Info(
+                "Perks",
+                $"Loaded perk catalog from {OPPaths.PerkCatalogPath}: schemaVersion={normalized.SchemaVersion}, playerPerks={normalized.PlayerPerks.Count}, shipPerks={normalized.ShipPerks.Count}");
+            return normalized;
+        }
 
         catalog = CreateDefaultCatalog();
         JsonFileWriter.Write(OPPaths.PerkCatalogPath, catalog);
         OPLog.Info("Perks", $"Created perk catalog at {OPPaths.PerkCatalogPath}");
+        OPLog.Info("Perks", $"Default perk catalog seeded: playerPerks={catalog.PlayerPerks.Count}, shipPerks={catalog.ShipPerks.Count}");
         return catalog;
     }
 
     private static PerkCatalogDefinition Normalize(PerkCatalogDefinition catalog)
     {
         if (catalog.SchemaVersion <= 0)
+        {
+            OPLog.Info("Perks", $"Normalizing perk catalog schemaVersion {catalog.SchemaVersion} -> 1");
             catalog.SchemaVersion = 1;
+        }
 
         catalog.PlayerPerks ??= new List<PerkDefinition>();
         catalog.ShipPerks ??= new List<PerkDefinition>();

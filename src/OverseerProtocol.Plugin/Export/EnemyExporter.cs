@@ -18,7 +18,7 @@ namespace OverseerProtocol.Export
 
             var path = OPPaths.EnemyExportPath;
             JsonFileWriter.Write(path, enemies);
-            OPLog.Info("Export", $"Desplegado catálogo de enemigos ({enemies.Count} registros) en {path}");
+            OPLog.Info("Export", $"Wrote enemy catalog: count={enemies.Count}, path={path}");
         }
     }
 }
