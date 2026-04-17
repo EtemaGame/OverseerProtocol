@@ -12,9 +12,6 @@ public sealed class ItemOverrideValidator
         var report = new ValidationReport();
         var validatedCollection = new ItemOverrideCollection();
 
-        if (!references.HasExportedItemCatalog)
-            report.Error("ITEM_CATALOG_MISSING", "Item overrides require a valid exported item catalog.");
-
         if (!references.HasRuntimeItemCatalog)
             report.Error("ITEM_RUNTIME_CATALOG_MISSING", "Item overrides require the runtime item catalog to be loaded.");
 
@@ -46,12 +43,6 @@ public sealed class ItemOverrideValidator
                 continue;
             }
 
-            if (!references.ExportedItemIds.Contains(itemOverride.Id))
-            {
-                report.Warning("ITEM_ID_UNKNOWN", $"Item Id '{itemOverride.Id}' does not exist in the exported item catalog. Skipping item override.", $"{itemPath}.id");
-                continue;
-            }
-
             if (!references.RuntimeItemIds.Contains(itemOverride.Id))
             {
                 report.Warning("ITEM_ID_UNRESOLVED", $"Item Id '{itemOverride.Id}' does not exist in the runtime item catalog. Skipping item override.", $"{itemPath}.id");
@@ -68,10 +59,27 @@ public sealed class ItemOverrideValidator
             {
                 Id = itemOverride.Id,
                 CreditsWorth = ValidateCreditsWorth(itemOverride.CreditsWorth, report, $"{itemPath}.creditsWorth", itemOverride.Id),
-                Weight = ValidateWeight(itemOverride.Weight, report, $"{itemPath}.weight", itemOverride.Id)
+                Weight = ValidateWeight(itemOverride.Weight, report, $"{itemPath}.weight", itemOverride.Id),
+                AddToStore = itemOverride.AddToStore,
+                StorePrice = ValidateCreditsWorth(itemOverride.StorePrice, report, $"{itemPath}.storePrice", itemOverride.Id),
+                MinValue = ValidateCreditsWorth(itemOverride.MinValue, report, $"{itemPath}.minValue", itemOverride.Id),
+                MaxValue = ValidateCreditsWorth(itemOverride.MaxValue, report, $"{itemPath}.maxValue", itemOverride.Id)
             };
 
-            if (!validatedOverride.CreditsWorth.HasValue && !validatedOverride.Weight.HasValue)
+            if (validatedOverride.MinValue.HasValue &&
+                validatedOverride.MaxValue.HasValue &&
+                validatedOverride.MaxValue.Value < validatedOverride.MinValue.Value)
+            {
+                report.Warning("ITEM_VALUE_RANGE_REPAIRED", $"Item '{itemOverride.Id}' maxValue is below minValue. maxValue was raised to minValue.", $"{itemPath}.maxValue");
+                validatedOverride.MaxValue = validatedOverride.MinValue;
+            }
+
+            if (!validatedOverride.CreditsWorth.HasValue &&
+                !validatedOverride.Weight.HasValue &&
+                validatedOverride.AddToStore != true &&
+                !validatedOverride.StorePrice.HasValue &&
+                !validatedOverride.MinValue.HasValue &&
+                !validatedOverride.MaxValue.HasValue)
             {
                 report.Warning("ITEM_OVERRIDE_EMPTY", $"Item override for '{itemOverride.Id}' does not define any supported fields. Skipping item override.", itemPath);
                 continue;

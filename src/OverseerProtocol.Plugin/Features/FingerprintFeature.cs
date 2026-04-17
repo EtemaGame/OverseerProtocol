@@ -1,9 +1,6 @@
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using OverseerProtocol.Configuration;
 using OverseerProtocol.Core.Logging;
-using OverseerProtocol.Core.Paths;
 using OverseerProtocol.Core.Security;
 
 namespace OverseerProtocol.Features;
@@ -13,17 +10,11 @@ public sealed class FingerprintFeature
     public RuntimeFingerprints ComputeCurrent()
     {
         var presetName = OPConfig.ActivePresetName;
-
-        var presetFiles = new List<string>
-        {
-            OPPaths.GetPresetManifestPath(presetName),
-            OPPaths.ItemsConfigPath,
-            OPPaths.GetPresetLobbyRulesPath(presetName),
-            OPPaths.GetPresetRuntimeRulesPath(presetName)
-        };
-
-        if (Directory.Exists(OPPaths.MoonConfigRoot))
-            presetFiles.AddRange(Directory.GetFiles(OPPaths.MoonConfigRoot, "*.json").OrderBy(path => path, System.StringComparer.Ordinal));
+        var runtimeConfig = new RuntimeTuningConfig(OPConfig.ConfigFile);
+        var itemOverrides = runtimeConfig.BuildItemOverrides();
+        var moonOverrides = runtimeConfig.BuildMoonOverrides();
+        var spawnOverrides = runtimeConfig.BuildSpawnOverrides();
+        var runtimeRules = runtimeConfig.BuildRuntimeRules();
 
         var configText =
             "preset=" + presetName + "\n" +
@@ -36,23 +27,36 @@ public sealed class FingerprintFeature
             "itemWeightMultiplier=" + OPConfig.ItemWeightMultiplier.Value.ToString("R") + "\n" +
             "spawnRarityMultiplier=" + OPConfig.SpawnRarityMultiplier.Value.ToString("R") + "\n" +
             "routePriceMultiplier=" + OPConfig.RoutePriceMultiplier.Value.ToString("R") + "\n" +
-            "aggressionProfile=" + OPConfig.AggressionProfile.Value + "\n";
-
-        foreach (var path in presetFiles)
-            OPLog.Info("Fingerprint", $"Fingerprint input file: {path}");
+            "travelDiscountMultiplier=" + OPConfig.TravelDiscountMultiplier.Value.ToString("R") + "\n" +
+            "aggressionProfile=" + OPConfig.AggressionProfile.Value + "\n" +
+            "items=" + string.Join(";", itemOverrides.Overrides.OrderBy(item => item.Id).Select(item => item.Id + ":" + item.CreditsWorth + ":" + item.Weight)) + "\n" +
+            "moons=" + string.Join(";", moonOverrides.Overrides.OrderBy(moon => moon.MoonId).Select(moon => moon.MoonId + ":" + moon.RoutePrice + ":" + moon.RiskLevel + ":" + moon.RiskLabel)) + "\n" +
+            "spawns=" + string.Join(";", spawnOverrides.Overrides.OrderBy(spawn => spawn.MoonId).Select(FormatSpawnOverride)) + "\n" +
+            "moonRules=" + string.Join(";", runtimeRules.MoonRules.OrderBy(pair => pair.Key).Select(pair => pair.Key + ":" + pair.Value.RoutePriceMultiplier.ToString("R"))) + "\n";
 
         OPLog.Info("Fingerprint", "Fingerprint config input:\n" + configText);
 
         var result = new RuntimeFingerprints
         {
             ActivePreset = presetName,
-            PresetFingerprint = FingerprintUtility.ComputeCombinedFileHash(presetFiles),
+            PresetFingerprint = FingerprintUtility.ComputeTextHash("builtin-preset=" + presetName),
             ConfigFingerprint = FingerprintUtility.ComputeTextHash(configText)
         };
 
         OPLog.Info("Fingerprint", $"Fingerprint result: preset={result.ActivePreset}, presetHash={result.PresetFingerprint}, configHash={result.ConfigFingerprint}");
         return result;
     }
+
+    private static string FormatSpawnOverride(OverseerProtocol.Data.Models.MoonSpawnOverride spawn) =>
+        spawn.MoonId + ":" +
+        FormatPool(spawn.InsideEnemies) + ":" +
+        FormatPool(spawn.OutsideEnemies) + ":" +
+        FormatPool(spawn.DaytimeEnemies);
+
+    private static string FormatPool(System.Collections.Generic.IEnumerable<OverseerProtocol.Data.Models.Spawns.SpawnEntry>? entries) =>
+        entries == null
+            ? "keep"
+            : string.Join(",", entries.Select(entry => entry.EnemyId + "=" + entry.Rarity));
 }
 
 public sealed class RuntimeFingerprints

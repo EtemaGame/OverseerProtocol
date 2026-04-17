@@ -19,10 +19,10 @@ Snapshots of the game's vanilla state are exported as structured JSON. This "van
 - **Contract Documentation**: Clear visibility into what the game exposes to modders.
 
 ### 3. Controlled Overrides (Override)
-Once the state is organized, OverseerProtocol writes human-editable tuning files:
-- **Items**: `overseer-data/items.json` for item values, weight, and reserved shop/battery fields.
-- **Moons**: `overseer-data/moons/<MoonId>.json` for route price, risk, spawn pools, and reserved scrap/item pools.
-- **Utility Catalog**: `overseer-data/utility-catalog.json` for copy/paste IDs.
+Once the state is organized, OverseerProtocol applies user tuning from the standard BepInEx config file:
+- **Items**: `[Items]` lists every item as an entity line with observed value, weight, store placeholders, and enable switch.
+- **Moons**: `[Moons]` lists every moon as an entity line with observed price, tier, description placeholder, scrap placeholders, and enable switch.
+- **Spawns**: `[Moons.InsideEnemies]`, `[Moons.OutsideEnemies]`, and `[Moons.DaytimeEnemies]` list each moon's observed enemy pools and allow full replacement.
 - **Safety First**: Every supported runtime modification includes validation to prevent crashes.
 
 ## 🚀 Development Status (Foundation V1)
@@ -37,13 +37,13 @@ Latest implementation review: [`docs/implementation-review-2026-04-16.md`](docs/
 
 - [x] **Infrastructure**: BepInEx loading, Harmony patching, stable lifecycle triggers.
 - [x] **Data Layer**: Clean exports for items, moons, and enemies.
-- [x] **Item Tuning (V1)**: Runtime modification of item weight and value through `overseer-data/items.json`.
-- [x] **Spawn Tuning (V1)**: Pool replacement and rarity tuning through one file per moon.
+- [x] **Item Tuning (V1)**: Runtime modification of item weight and value through BepInEx `.cfg`.
+- [x] **Spawn Tuning (V1)**: Pool replacement and rarity tuning through BepInEx `.cfg` sections.
 - [x] **Validation Layer**: Cross-reference resolution and safety checks.
-- [x] **Hybrid Config**: `.cfg` for simple toggles + JSON for complex profiles.
+- [x] **BepInEx Config**: `.cfg` is the sole user-editable source of truth for runtime tuning.
 - [x] **Moon Economy V2**: Route price resolution and raw TerminalNode economy export.
-- [x] **Moon Tuning (V1)**: Risk labels and route prices through `overseer-data/moons/<MoonId>.json`.
-- [x] **Presets V1**: Built-in preset manifests and safe multiplier defaults.
+- [x] **Moon Tuning (V1)**: Risk labels and route prices through BepInEx `.cfg`.
+- [x] **Presets V1**: Built-in presets and safe multiplier defaults.
 - [x] **Semantic Difficulty V1**: Aggression profiles layered over spawn rarity multipliers.
 - [x] **Runtime Snapshot V1**: In-memory vanilla baseline for reset/reload workflows.
 - [x] **Runtime Rules V1**: Data contract plus active route/travel-discount rule application.
@@ -59,8 +59,8 @@ Latest implementation review: [`docs/implementation-review-2026-04-16.md`](docs/
 
 - BepInEx and Harmony references are present under `references/bepinex`.
 - Lethal Company game assemblies are available locally for build-time symbol validation.
-- JSON sample validation passes with local Node.
-- `dotnet build OverseerProtocol.slnx` passes locally.
+- User tuning is configured through `BepInEx/config/com.overseerprotocol.core.cfg`.
+- JSON exports remain diagnostic and non-authoritative.
 
 ---
 

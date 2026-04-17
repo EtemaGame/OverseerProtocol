@@ -26,7 +26,7 @@ public sealed class RuntimeOrchestrator
         OPLog.Info("Runtime", "Startup step 1/6: load data-only contracts.");
         LoadDataContracts();
 
-        OPLog.Info("Runtime", "Startup step 2/5: capture vanilla runtime snapshot if needed.");
+        OPLog.Info("Runtime", "Startup step 2/6: capture vanilla runtime snapshot if needed.");
         if (!_snapshot.IsCaptured)
             _snapshot.Capture();
         else
@@ -35,12 +35,12 @@ public sealed class RuntimeOrchestrator
         RuntimeDiagnostics.LogRuntimePreconditions("startup-pipeline/after-snapshot");
         OPLog.Info("Runtime", "Startup step 3/6: export vanilla catalogs.");
         ExportVanillaCatalogs();
-        OPLog.Info("Runtime", "Startup step 4/6: ensure human-editable config files.");
-        EnsureUserConfigFiles();
+        OPLog.Info("Runtime", "Startup step 4/6: bind runtime .cfg entries for discovered IDs.");
+        BindRuntimeConfigEntries();
         LogFingerprints();
         OPLog.Info("Runtime", "Startup step 5/6: reset runtime state to snapshot before applying config.");
         ResetToSnapshot();
-        OPLog.Info("Runtime", "Startup step 6/6: apply preset, user config, multipliers, and runtime rules.");
+        OPLog.Info("Runtime", "Startup step 6/6: apply preset, .cfg overrides, multipliers, and runtime rules.");
         ApplyRuntimeConfiguration();
         RuntimeDiagnostics.LogRuntimePreconditions("startup-pipeline/end");
         OPLog.Info("Runtime", "=== TEST SIGNAL: STARTUP PIPELINE END ===");
@@ -63,8 +63,9 @@ public sealed class RuntimeOrchestrator
             return;
         }
 
+        OPConfig.Reload();
         LoadDataContracts();
-        EnsureUserConfigFiles();
+        BindRuntimeConfigEntries();
         LogFingerprints();
         ResetToSnapshot();
         ApplyRuntimeConfiguration();
@@ -103,11 +104,17 @@ public sealed class RuntimeOrchestrator
         metrics.Complete();
     }
 
-    public void EnsureUserConfigFiles()
+    public void BindRuntimeConfigEntries()
     {
-        var metrics = PhaseMetrics.Start("Runtime", "ensure-user-config-files");
-        var userConfigFeature = new UserConfigFeature();
-        userConfigFeature.EnsureUserFiles();
+        var metrics = PhaseMetrics.Start("Runtime", "bind-runtime-cfg-entries");
+        var config = new RuntimeTuningConfig(OPConfig.ConfigFile);
+        config.BuildItemOverrides();
+        config.BuildMoonOverrides();
+        config.BuildSpawnOverrides();
+        config.BuildRuntimeRules();
+        config.BindReservedScaffolds();
+        OPConfig.ConfigFile.Save();
+        OPLog.Info("Config", "Runtime .cfg entries were bound and saved for discovered item, moon, and spawn IDs.");
         metrics.Applied();
         metrics.Complete();
     }
@@ -149,25 +156,25 @@ public sealed class RuntimeOrchestrator
 
         if (OPConfig.EnableLobbyRulesLoading.Value)
         {
-            RuntimeDiagnostics.LogFeatureDecision("Lobby rules", true, "load or create lobby-rules.json");
+            RuntimeDiagnostics.LogFeatureDecision("Lobby rules", true, "resolve lobby rules from .cfg");
             var lobbyRulesFeature = new LobbyRulesFeature();
             lobbyRulesFeature.LoadOrCreate();
         }
         else
         {
-            RuntimeDiagnostics.LogFeatureDecision("Lobby rules", false, "skip lobby-rules.json");
+            RuntimeDiagnostics.LogFeatureDecision("Lobby rules", false, "skip lobby .cfg rules");
             OPLog.Info("LobbyRules", "Lobby rules loading disabled by config.");
         }
 
         if (OPConfig.EnableRuntimeRulesLoading.Value)
         {
-            RuntimeDiagnostics.LogFeatureDecision("Runtime rules", true, "load or create runtime-rules.json");
+            RuntimeDiagnostics.LogFeatureDecision("Runtime rules", true, "resolve runtime rules from .cfg");
             var runtimeRulesFeature = new RuntimeRulesFeature();
             runtimeRulesFeature.LoadOrCreate();
         }
         else
         {
-            RuntimeDiagnostics.LogFeatureDecision("Runtime rules", false, "skip runtime-rules.json");
+            RuntimeDiagnostics.LogFeatureDecision("Runtime rules", false, "skip runtime .cfg rules");
             OPLog.Info("RuntimeRules", "Runtime rules loading disabled by config.");
         }
 
@@ -186,7 +193,7 @@ public sealed class RuntimeOrchestrator
 
     private static void ApplyRuntimeConfiguration()
     {
-        OPLog.Info("Runtime", "Applying runtime configuration in precedence order: snapshot -> preset -> user JSON tuning -> cfg multipliers/toggles -> runtime rules.");
+        OPLog.Info("Runtime", "Applying runtime configuration in precedence order: snapshot -> built-in preset -> .cfg explicit overrides -> .cfg multipliers/toggles -> .cfg runtime rules.");
         RuntimeDiagnostics.LogRuntimePreconditions("apply-runtime-configuration/before");
         var presetFeature = new PresetFeature();
         var presetRuntimeSettings = presetFeature.ResolveRuntimeSettings();
@@ -196,37 +203,37 @@ public sealed class RuntimeOrchestrator
 
         if (OPConfig.EnableItemOverrides.Value)
         {
-            RuntimeDiagnostics.LogFeatureDecision("Item tuning", true, "load, validate, and apply overseer-data/items.json");
+            RuntimeDiagnostics.LogFeatureDecision("Item tuning", true, "load, validate, and apply .cfg item overrides");
             var itemOverrideFeature = new ItemOverrideFeature();
             itemOverrideFeature.ApplyOverrides(OPConfig.ActivePresetName);
         }
         else
         {
-            RuntimeDiagnostics.LogFeatureDecision("Item tuning", false, "skip overseer-data/items.json");
+            RuntimeDiagnostics.LogFeatureDecision("Item tuning", false, "skip .cfg item overrides");
             OPLog.Info("Overrides", "Item tuning disabled by config.");
         }
 
         if (OPConfig.EnableSpawnOverrides.Value)
         {
-            RuntimeDiagnostics.LogFeatureDecision("Spawn tuning", true, "load, validate, and apply overseer-data/moons/*.json spawn pools");
+            RuntimeDiagnostics.LogFeatureDecision("Spawn tuning", true, "load, validate, and apply .cfg spawn pool overrides");
             var spawnOverrideFeature = new SpawnOverrideFeature();
             spawnOverrideFeature.ApplyOverrides(OPConfig.ActivePresetName);
         }
         else
         {
-            RuntimeDiagnostics.LogFeatureDecision("Spawn tuning", false, "skip overseer-data/moons/*.json spawn pools");
+            RuntimeDiagnostics.LogFeatureDecision("Spawn tuning", false, "skip .cfg spawn pool overrides");
             OPLog.Info("Overrides", "Spawn tuning disabled by config.");
         }
 
         if (OPConfig.EnableMoonOverrides.Value)
         {
-            RuntimeDiagnostics.LogFeatureDecision("Moon tuning", true, "load, validate, and apply overseer-data/moons/*.json moon fields");
+            RuntimeDiagnostics.LogFeatureDecision("Moon tuning", true, "load, validate, and apply .cfg moon overrides");
             var moonOverrideFeature = new MoonOverrideFeature();
             moonOverrideFeature.ApplyOverrides(OPConfig.ActivePresetName);
         }
         else
         {
-            RuntimeDiagnostics.LogFeatureDecision("Moon tuning", false, "skip overseer-data/moons/*.json moon fields");
+            RuntimeDiagnostics.LogFeatureDecision("Moon tuning", false, "skip .cfg moon overrides");
             OPLog.Info("Overrides", "Moon tuning disabled by config.");
         }
 
@@ -255,7 +262,7 @@ public sealed class RuntimeOrchestrator
 
         if (OPConfig.EnableRuntimeRulesLoading.Value && !OPConfig.DryRunOverrides.Value)
         {
-            RuntimeDiagnostics.LogFeatureDecision("Runtime rules application", true, "apply active runtime-rules.json fields");
+            RuntimeDiagnostics.LogFeatureDecision("Runtime rules application", true, "apply active .cfg runtime rule fields");
             var runtimeRulesFeature = new RuntimeRulesFeature();
             var runtimeRules = runtimeRulesFeature.LoadOrCreate();
             runtimeRulesFeature.Apply(runtimeRules);

@@ -7,6 +7,8 @@ public sealed class EnemyTypeRegistry
 {
     private readonly Dictionary<string, EnemyType> _registry = new();
 
+    public IEnumerable<string> EnemyIds => _registry.Keys;
+
     public void BuildRegistry()
     {
         _registry.Clear();

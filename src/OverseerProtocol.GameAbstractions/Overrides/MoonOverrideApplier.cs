@@ -82,6 +82,27 @@ public sealed class MoonOverrideApplier
                 OPLog.Info("Overrides", $"Moon tuning for '{level.name}' has no routePrice change.");
             }
 
+            if (!string.IsNullOrWhiteSpace(moonOverride.Description))
+            {
+                OPLog.Info("Overrides", $"Overriding {level.name}.LevelDescription.");
+                level.LevelDescription = moonOverride.Description;
+                applied = true;
+            }
+
+            if (moonOverride.MinScrap.HasValue)
+            {
+                OPLog.Info("Overrides", $"Overriding {level.name}.minScrap: {level.minScrap} -> {moonOverride.MinScrap.Value}");
+                level.minScrap = moonOverride.MinScrap.Value;
+                applied = true;
+            }
+
+            if (moonOverride.MaxScrap.HasValue)
+            {
+                OPLog.Info("Overrides", $"Overriding {level.name}.maxScrap: {level.maxScrap} -> {moonOverride.MaxScrap.Value}");
+                level.maxScrap = moonOverride.MaxScrap.Value;
+                applied = true;
+            }
+
             if (applied)
                 appliedMoonCount++;
             else

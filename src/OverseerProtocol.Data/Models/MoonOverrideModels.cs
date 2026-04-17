@@ -14,4 +14,7 @@ public sealed class MoonOverrideDefinition
     public int? RiskLevel { get; set; }
     public string? RiskLabel { get; set; }
     public int? RoutePrice { get; set; }
+    public string? Description { get; set; }
+    public int? MinScrap { get; set; }
+    public int? MaxScrap { get; set; }
 }

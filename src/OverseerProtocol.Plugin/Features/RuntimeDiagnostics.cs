@@ -26,12 +26,7 @@ public static class RuntimeDiagnostics
         OPLog.Info("Diagnostics", $"Path PluginRoot={OPPaths.PluginRoot}");
         OPLog.Info("Diagnostics", $"Path DataRoot={OPPaths.DataRoot}");
         OPLog.Info("Diagnostics", $"Path ExportRoot={OPPaths.ExportRoot}");
-        OPLog.Info("Diagnostics", $"Path ItemsConfig={OPPaths.ItemsConfigPath}");
-        OPLog.Info("Diagnostics", $"Path MoonConfigRoot={OPPaths.MoonConfigRoot}");
-        OPLog.Info("Diagnostics", $"Path UtilityCatalog={OPPaths.UtilityCatalogPath}");
-        OPLog.Info("Diagnostics", $"Path PresetsRoot={OPPaths.PresetsRoot}");
         OPLog.Info("Diagnostics", $"Path Saves={OPPaths.PersistenceRoot}");
-        OPLog.Info("Diagnostics", $"Path Rules={OPPaths.RulesRoot}");
         OPLog.Info("Diagnostics", $"Path Definitions={OPPaths.DefinitionsRoot}");
     }
 

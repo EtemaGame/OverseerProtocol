@@ -1,155 +1,109 @@
 # User Tuning V1
 
-OverseerProtocol genera archivos editables desde los datos reales del juego. La regla practica es:
-
-- `observed`: foto regenerada desde el runtime. Sirve para mirar, no para editar.
-- `override`, `spawns`, `scrap`, `items`, `store`, `battery`: campos que el usuario puede tocar.
-- `utility-catalog.json`: lista de IDs para copiar y pegar.
-
-## Archivos Principales
+OverseerProtocol usa una sola fuente de verdad editable:
 
 ```text
-BepInEx/plugins/OverseerProtocol/overseer-data/items.json
-BepInEx/plugins/OverseerProtocol/overseer-data/moons/<MoonId>.json
-BepInEx/plugins/OverseerProtocol/overseer-data/utility-catalog.json
+BepInEx/config/com.overseerprotocol.core.cfg
 ```
 
-Tambien se siguen generando exports crudos en `overseer-data/exports/` para diagnostico, pero el flujo normal de edicion usa los archivos de arriba.
+Los JSON bajo `overseer-data/exports/` son diagnostico no autoritativo.
 
 ## Items
 
-`items.json` contiene todos los items detectados. Cada bloque tiene el ID estable, datos observados y campos editables.
+`[Items]` lista los items detectados como entidades completas:
 
-Ejemplo:
-
-```json
-{
-  "id": "Shovel",
-  "enabled": true,
-  "observed": {
-    "displayName": "Shovel",
-    "creditsWorth": 30,
-    "weight": 1.13,
-    "requiresBattery": false
-  },
-  "override": {
-    "creditsWorth": 45,
-    "weight": 1.05
-  },
-  "store": {
-    "storePrice": 45
-  },
-  "battery": {},
-  "spawn": {}
-}
+```ini
+[Items]
+Shovel = enabled=false; displayName=Shovel; value=30; weight=1.13; scrap=false; store=false; storePrice=-1; battery=false; minValue=0; maxValue=0
+GoldBar = enabled=false; displayName=Gold bar; value=150; weight=1.77; scrap=true; store=false; storePrice=-1; battery=false; minValue=100; maxValue=180
 ```
 
-Activo hoy:
+Activo hoy cuando `enabled=true`:
 
-- `override.creditsWorth`
-- `override.weight`
+- `value`: modifica `creditsWorth`.
+- `weight`: modifica `weight`.
+- `store`: agrega el item al catalogo de compra de la terminal.
+- `storePrice`: cambia el precio usado por tienda/creditsWorth.
+- `minValue`: modifica el minimo de valor cuando el item aparece como scrap.
+- `maxValue`: modifica el maximo de valor cuando el item aparece como scrap.
 
-Reservado hasta verificar hooks seguros:
+Visible pero reservado hasta tener hooks seguros:
 
-- `store.addToStore`, `store.storePrice`, `store.maxStoreStock`
-- `battery.requiresBattery`, `battery.batteryUsageMultiplier`, `battery.batteryCapacityMultiplier`
-- `spawn.allowAsScrap`, `spawn.minValue`, `spawn.maxValue`
+- `battery`
 
-## Lunas
+## Moons
 
-Cada luna tiene su propio archivo en `moons/<MoonId>.json`. Si quieres tocar Experimentation, editas:
+`[Moons]` lista las lunas detectadas:
 
-```text
-overseer-data/moons/ExperimentationLevel.json
+```ini
+[Moons]
+AdamanceLevel = enabled=false; displayName=20 Adamance; price=0; tier=B; riskLevel=3; description=; minScrap=8; maxScrap=12; interior=reserved
 ```
 
-Ejemplo de costo y riesgo:
+Activo hoy cuando `enabled=true`:
 
-```json
-{
-  "moonId": "ExperimentationLevel",
-  "enabled": true,
-  "override": {
-    "routePrice": 125,
-    "riskLabel": "B",
-    "routePriceMultiplier": 1.5
-  }
-}
+- `price`: modifica precio de ruta.
+- `tier` o `riskLabel`: modifica label de riesgo.
+- `riskLevel`: acepta `0..5` y se mapea a `None`, `D`, `C`, `B`, `A`, `S`.
+- `description`: modifica la descripcion interna de la luna.
+- `minScrap`: modifica el minimo de scrap del nivel.
+- `maxScrap`: modifica el maximo de scrap del nivel.
+
+Visible pero reservado:
+
+- `interior`
+
+## Enemigos Por Luna
+
+Cada pool lista la composicion observada por luna:
+
+```ini
+[Moons.InsideEnemies]
+ExperimentationLevel = enabled=false; entries=Centipede:50, HoarderBug:20
+
+[Moons.OutsideEnemies]
+ExperimentationLevel = enabled=false; entries=MouthDog:10
+
+[Moons.DaytimeEnemies]
+ExperimentationLevel = enabled=false; entries=RedLocustBees:20
 ```
 
-Activo hoy:
+Cuando `enabled=true`, el pool se reemplaza por `entries`. Si `entries` esta vacio, el pool queda vacio.
 
-- `override.routePrice`
-- `override.riskLevel`
-- `override.riskLabel`
-- `override.routePriceMultiplier`
+## Multipliers Y Runtime Rules
 
-Reservado hasta verificar hooks seguros:
+```ini
+[Multipliers]
+ItemWeightMultiplier = 1
+SpawnRarityMultiplier = 1
+RoutePriceMultiplier = 1
 
-- `override.displayName`
-- `override.description`
-- `scrap.*`
-- `items.*`
+[RuntimeRules.Economy]
+TravelDiscountMultiplier = 1
 
-## Spawns Por Luna
-
-Dentro de cada luna hay tres pools:
-
-- `spawns.insideEnemies`
-- `spawns.outsideEnemies`
-- `spawns.daytimeEnemies`
-
-Cada pool usa `mode`:
-
-- `keep`: mantiene el pool observado. Las entradas se refrescan desde el juego.
-- `replace`: reemplaza el pool por `entries`.
-- `clear`: deja el pool vacio.
-
-Ejemplo para reemplazar enemigos interiores:
-
-```json
-{
-  "spawns": {
-    "insideEnemies": {
-      "mode": "replace",
-      "entries": [
-        { "enemyId": "Centipede", "rarity": 50 },
-        { "enemyId": "Flowerman", "rarity": 20 }
-      ]
-    },
-    "outsideEnemies": {
-      "mode": "keep",
-      "entries": []
-    },
-    "daytimeEnemies": {
-      "mode": "clear",
-      "entries": []
-    }
-  }
-}
+[Moons.RouteMultiplier]
+AdamanceLevel = enabled=false; multiplier=1
 ```
 
-## Utility Catalog
+## Reservados
 
-`utility-catalog.json` no aplica cambios. Es una hoja de referencia con:
+Estas secciones existen para dejar clara la vision del mod, pero no aplican gameplay hasta que haya hooks verificados:
 
-- items disponibles.
-- lunas disponibles.
-- enemigos disponibles.
-- spawn profiles actuales.
+```ini
+[Interiors]
+Reserved = enabled=false; note=...
 
-Usalo cuando quieras agregar un mob que no aparece en una luna, sacar un mob, o copiar el ID exacto de un item.
+[Utility]
+Reserved = enabled=false; note=...
+
+[Perks]
+Reserved = enabled=false; note=...
+```
 
 ## Precedencia Runtime
 
-El orden efectivo es:
-
 ```text
-snapshot vanilla -> preset -> user JSON tuning -> cfg multipliers/toggles -> runtime rules
+snapshot vanilla -> built-in preset -> enabled .cfg entity overrides -> .cfg multipliers/toggles -> .cfg runtime rules
 ```
 
-Esto significa que `items.json` y `moons/*.json` aplican despues de restaurar vanilla y antes de los multipliers globales.
-
-## Limpieza Del Formato Antiguo
-
-El runtime ya no lee el formato legacy de la carpeta `overseer-data/overrides`. Si esa carpeta existe en un perfil viejo, queda ignorada. No se borra automaticamente para evitar destruir archivos editados por el usuario.
+`reload` relee el `.cfg`, reconstruye overrides, restaura snapshot y reaplica. `reset` solo restaura snapshot.

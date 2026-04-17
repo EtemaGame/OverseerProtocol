@@ -1,81 +1,34 @@
 # Runtime Rules V1
 
-Runtime rules are a data contract for economy, ship, weather, and moon-specific balancing.
-
-Default path:
-
-```text
-BepInEx/plugins/OverseerProtocol/overseer-data/rules/runtime-rules.json
-```
-
-Preset path:
-
-```text
-BepInEx/plugins/OverseerProtocol/overseer-data/presets/<preset-id>/rules/runtime-rules.json
-```
-
-Config gate:
+Runtime rules se configuran en BepInEx `.cfg`, no en JSON.
 
 ```ini
 [RuntimeRules]
 EnableRuntimeRulesLoading = true
+
+[RuntimeRules.Economy]
+TravelDiscountMultiplier = 1
+
+[Moons.RouteMultiplier]
+ExperimentationLevel = 1
 ```
 
-## Contract
+## Estado Actual
 
-```json
-{
-  "schemaVersion": 1,
-  "economy": {
-    "quotaMultiplier": 1,
-    "deadlineMultiplier": 1,
-    "travelDiscountMultiplier": 1,
-    "scrapValueMultiplier": 1,
-    "preserveShipLootOnTeamWipe": false
-  },
-  "ship": {
-    "landingSpeedMultiplier": 1,
-    "dropshipSpeedMultiplier": 1,
-    "scannerDistanceMultiplier": 1,
-    "batteryCapacityMultiplier": 1
-  },
-  "weather": {
-    "clearRewardMultiplier": 1,
-    "rainyRewardMultiplier": 1,
-    "stormyRewardMultiplier": 1,
-    "foggyRewardMultiplier": 1,
-    "floodedRewardMultiplier": 1,
-    "eclipsedRewardMultiplier": 1
-  },
-  "moonRules": {
-    "ExperimentationLevel": {
-      "routePriceMultiplier": 1,
-      "scrapValueMultiplier": 1,
-      "spawnRarityMultiplier": 1,
-      "weatherRewardMultiplier": 1
-    }
-  }
-}
-```
+Activo hoy:
 
-## Current Status
+- `RuntimeRules.Economy.TravelDiscountMultiplier` multiplica precios de rutas de Terminal.
+- `Moons.RouteMultiplier.<MoonId>` aplica un multiplier per-moon a rutas de Terminal.
+- `Multipliers.RoutePriceMultiplier` sigue siendo el multiplier global simple y se aplica antes de runtime rules.
 
-V1 creates, loads, normalizes, and partially applies this file. Most fields are still reserved until their runtime hooks are verified.
+Reservado/experimental:
 
-Active now:
+- quota/deadline;
+- scrap value;
+- preserve ship loot;
+- ship timing;
+- scanner/battery;
+- weather rewards;
+- per-moon scrap/spawn/weather rule composition.
 
-- Global route prices can be changed with `RoutePriceMultiplier`.
-- Per-moon route prices can be changed with `overseer-data/moons/<MoonId>.json`.
-- `economy.travelDiscountMultiplier` is applied to terminal route prices.
-- `moonRules.<moonId>.routePriceMultiplier` is applied to terminal route prices for that moon.
-
-Reserved/experimental:
-
-- `quotaMultiplier`
-- `deadlineMultiplier`
-- `scrapValueMultiplier`
-- `preserveShipLootOnTeamWipe`
-- ship timing fields
-- weather reward fields
-
-Future runtime hooks should consume this contract for quota, deadline, loot retention, ship timings, weather reward tuning, and broader moon-specific rule composition.
+Los modelos internos siguen agrupando estas ideas para mantener la arquitectura conceptual, pero el usuario no edita `runtime-rules.json`.

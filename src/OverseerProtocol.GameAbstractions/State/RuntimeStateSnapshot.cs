@@ -9,6 +9,8 @@ public sealed class RuntimeStateSnapshot
     private readonly Dictionary<string, ItemState> _items = new();
     private readonly Dictionary<string, LevelSpawnState> _levels = new();
     private readonly Dictionary<string, RouteNodeState> _routeNodes = new();
+    private Item[]? _terminalBuyableItems;
+    private int[]? _terminalItemSalesPercentages;
 
     public bool IsCaptured { get; private set; }
 
@@ -21,6 +23,7 @@ public sealed class RuntimeStateSnapshot
         var itemCount = CaptureItems();
         var levelCount = CaptureLevels();
         var routeNodeCount = CaptureRouteNodes();
+        CaptureTerminalStore();
 
         IsCaptured = true;
         OPLog.Info("Snapshot", $"Captured vanilla runtime state for {itemCount} items, {levelCount} moons, and {routeNodeCount} route nodes.");
@@ -37,6 +40,7 @@ public sealed class RuntimeStateSnapshot
         var itemCount = RestoreItems();
         var levelCount = RestoreLevels();
         var routeNodeCount = RestoreRouteNodes();
+        RestoreTerminalStore();
 
         OPLog.Info("Snapshot", $"Restored runtime state for {itemCount} items, {levelCount} moons, and {routeNodeCount} route nodes.");
     }
@@ -54,8 +58,8 @@ public sealed class RuntimeStateSnapshot
             if (item == null || string.IsNullOrWhiteSpace(item.name))
                 continue;
 
-            _items[item.name] = new ItemState(item.weight, item.creditsWorth);
-            OPLog.Info("Snapshot", $"Captured item state: item={item.name}, weight={item.weight:0.###}, creditsWorth={item.creditsWorth}");
+            _items[item.name] = new ItemState(item.weight, item.creditsWorth, item.minValue, item.maxValue);
+            OPLog.Debug("Snapshot", $"Captured item state: item={item.name}, weight={item.weight:0.###}, creditsWorth={item.creditsWorth}, minValue={item.minValue}, maxValue={item.maxValue}");
         }
 
         return _items.Count;
@@ -76,12 +80,15 @@ public sealed class RuntimeStateSnapshot
 
             _levels[level.name] = new LevelSpawnState(
                 level.riskLevel,
+                level.LevelDescription,
+                level.minScrap,
+                level.maxScrap,
                 ClonePool(level.Enemies),
                 ClonePool(level.OutsideEnemies),
                 ClonePool(level.DaytimeEnemies));
-            OPLog.Info(
+            OPLog.Debug(
                 "Snapshot",
-                $"Captured moon state: moon={level.name}, riskLevel={level.riskLevel}, inside={level.Enemies?.Count ?? 0}, outside={level.OutsideEnemies?.Count ?? 0}, daytime={level.DaytimeEnemies?.Count ?? 0}");
+                $"Captured moon state: moon={level.name}, riskLevel={level.riskLevel}, minScrap={level.minScrap}, maxScrap={level.maxScrap}, inside={level.Enemies?.Count ?? 0}, outside={level.OutsideEnemies?.Count ?? 0}, daytime={level.DaytimeEnemies?.Count ?? 0}");
         }
 
         return _levels.Count;
@@ -99,10 +106,28 @@ public sealed class RuntimeStateSnapshot
                 continue;
 
             _routeNodes[node.name] = new RouteNodeState(node.itemCost);
-            OPLog.Info("Snapshot", $"Captured route node state: node={node.name}, moonIndex={node.buyRerouteToMoon}, itemCost={node.itemCost}");
+            OPLog.Debug("Snapshot", $"Captured route node state: node={node.name}, moonIndex={node.buyRerouteToMoon}, itemCost={node.itemCost}");
         }
 
         return _routeNodes.Count;
+    }
+
+    private void CaptureTerminalStore()
+    {
+        var terminal = UnityEngine.Object.FindObjectOfType<Terminal>();
+        if (terminal == null)
+        {
+            OPLog.Warning("Snapshot", "Terminal not available. Store snapshot skipped.");
+            return;
+        }
+
+        _terminalBuyableItems = terminal.buyableItemsList == null
+            ? null
+            : (Item[])terminal.buyableItemsList.Clone();
+        _terminalItemSalesPercentages = terminal.itemSalesPercentages == null
+            ? null
+            : (int[])terminal.itemSalesPercentages.Clone();
+        OPLog.Info("Snapshot", $"Captured terminal store state: buyableItems={_terminalBuyableItems?.Length ?? 0}, sales={_terminalItemSalesPercentages?.Length ?? 0}");
     }
 
     private int RestoreItems()
@@ -124,11 +149,15 @@ public sealed class RuntimeStateSnapshot
 
             var beforeWeight = item.weight;
             var beforeCredits = item.creditsWorth;
+            var beforeMin = item.minValue;
+            var beforeMax = item.maxValue;
             item.weight = state.Weight;
             item.creditsWorth = state.CreditsWorth;
-            OPLog.Info(
+            item.minValue = state.MinValue;
+            item.maxValue = state.MaxValue;
+            OPLog.Debug(
                 "Snapshot",
-                $"Restored item state: item={item.name}, weight {beforeWeight:0.###} -> {item.weight:0.###}, creditsWorth {beforeCredits} -> {item.creditsWorth}");
+                $"Restored item state: item={item.name}, weight {beforeWeight:0.###} -> {item.weight:0.###}, creditsWorth {beforeCredits} -> {item.creditsWorth}, minValue {beforeMin} -> {item.minValue}, maxValue {beforeMax} -> {item.maxValue}");
             restored++;
         }
 
@@ -153,16 +182,21 @@ public sealed class RuntimeStateSnapshot
                 continue;
 
             var beforeRisk = level.riskLevel;
+            var beforeMin = level.minScrap;
+            var beforeMax = level.maxScrap;
             var beforeInside = level.Enemies?.Count ?? 0;
             var beforeOutside = level.OutsideEnemies?.Count ?? 0;
             var beforeDaytime = level.DaytimeEnemies?.Count ?? 0;
             level.riskLevel = state.RiskLevel;
+            level.LevelDescription = state.Description;
+            level.minScrap = state.MinScrap;
+            level.maxScrap = state.MaxScrap;
             level.Enemies = ClonePool(state.InsideEnemies);
             level.OutsideEnemies = ClonePool(state.OutsideEnemies);
             level.DaytimeEnemies = ClonePool(state.DaytimeEnemies);
-            OPLog.Info(
+            OPLog.Debug(
                 "Snapshot",
-                $"Restored moon state: moon={level.name}, riskLevel {beforeRisk} -> {level.riskLevel}, inside {beforeInside} -> {level.Enemies.Count}, outside {beforeOutside} -> {level.OutsideEnemies.Count}, daytime {beforeDaytime} -> {level.DaytimeEnemies.Count}");
+                $"Restored moon state: moon={level.name}, riskLevel {beforeRisk} -> {level.riskLevel}, minScrap {beforeMin} -> {level.minScrap}, maxScrap {beforeMax} -> {level.maxScrap}, inside {beforeInside} -> {level.Enemies.Count}, outside {beforeOutside} -> {level.OutsideEnemies.Count}, daytime {beforeDaytime} -> {level.DaytimeEnemies.Count}");
             restored++;
         }
 
@@ -186,11 +220,29 @@ public sealed class RuntimeStateSnapshot
 
             var before = node.itemCost;
             node.itemCost = state.ItemCost;
-            OPLog.Info("Snapshot", $"Restored route node state: node={node.name}, itemCost {before} -> {node.itemCost}");
+            OPLog.Debug("Snapshot", $"Restored route node state: node={node.name}, itemCost {before} -> {node.itemCost}");
             restored++;
         }
 
         return restored;
+    }
+
+    private void RestoreTerminalStore()
+    {
+        var terminal = UnityEngine.Object.FindObjectOfType<Terminal>();
+        if (terminal == null)
+        {
+            OPLog.Warning("Snapshot", "Terminal not available. Store restore skipped.");
+            return;
+        }
+
+        if (_terminalBuyableItems != null)
+            terminal.buyableItemsList = (Item[])_terminalBuyableItems.Clone();
+
+        if (_terminalItemSalesPercentages != null)
+            terminal.itemSalesPercentages = (int[])_terminalItemSalesPercentages.Clone();
+
+        OPLog.Info("Snapshot", $"Restored terminal store state: buyableItems={terminal.buyableItemsList?.Length ?? 0}, sales={terminal.itemSalesPercentages?.Length ?? 0}");
     }
 
     private static List<SpawnableEnemyWithRarity> ClonePool(List<SpawnableEnemyWithRarity>? source)
@@ -212,31 +264,44 @@ public sealed class RuntimeStateSnapshot
 
     private sealed class ItemState
     {
-        public ItemState(float weight, int creditsWorth)
+        public ItemState(float weight, int creditsWorth, int minValue, int maxValue)
         {
             Weight = weight;
             CreditsWorth = creditsWorth;
+            MinValue = minValue;
+            MaxValue = maxValue;
         }
 
         public float Weight { get; }
         public int CreditsWorth { get; }
+        public int MinValue { get; }
+        public int MaxValue { get; }
     }
 
     private sealed class LevelSpawnState
     {
         public LevelSpawnState(
             string riskLevel,
+            string description,
+            int minScrap,
+            int maxScrap,
             List<SpawnableEnemyWithRarity> insideEnemies,
             List<SpawnableEnemyWithRarity> outsideEnemies,
             List<SpawnableEnemyWithRarity> daytimeEnemies)
         {
             RiskLevel = riskLevel;
+            Description = description;
+            MinScrap = minScrap;
+            MaxScrap = maxScrap;
             InsideEnemies = insideEnemies;
             OutsideEnemies = outsideEnemies;
             DaytimeEnemies = daytimeEnemies;
         }
 
         public string RiskLevel { get; }
+        public string Description { get; }
+        public int MinScrap { get; }
+        public int MaxScrap { get; }
         public List<SpawnableEnemyWithRarity> InsideEnemies { get; }
         public List<SpawnableEnemyWithRarity> OutsideEnemies { get; }
         public List<SpawnableEnemyWithRarity> DaytimeEnemies { get; }

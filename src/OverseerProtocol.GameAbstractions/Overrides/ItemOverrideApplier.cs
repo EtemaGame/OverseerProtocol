@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using OverseerProtocol.Core.Logging;
 using OverseerProtocol.Data.Models;
 using UnityEngine;
@@ -59,6 +60,7 @@ public sealed class ItemOverrideApplier
             }
 
             ApplyToItem(targetItem, overrideDef);
+            ApplyStoreFields(targetItem, overrideDef);
             appliedCount++;
         }
 
@@ -79,7 +81,78 @@ public sealed class ItemOverrideApplier
             item.weight = def.Weight.Value;
         }
 
-        if (!def.CreditsWorth.HasValue && !def.Weight.HasValue)
-            OPLog.Warning("Overrides", $"Item tuning entry for {item.name} had no active runtime fields.");
+        if (def.MinValue.HasValue)
+        {
+            OPLog.Info("Overrides", $"Overriding {item.name}.minValue: {item.minValue} -> {def.MinValue.Value}");
+            item.minValue = def.MinValue.Value;
+        }
+
+        if (def.MaxValue.HasValue)
+        {
+            OPLog.Info("Overrides", $"Overriding {item.name}.maxValue: {item.maxValue} -> {def.MaxValue.Value}");
+            item.maxValue = def.MaxValue.Value;
+        }
+
+        if (!def.CreditsWorth.HasValue && !def.Weight.HasValue && !def.MinValue.HasValue && !def.MaxValue.HasValue)
+            OPLog.Info("Overrides", $"Item tuning entry for {item.name} had no direct value/weight/range fields.");
+    }
+
+    private static void ApplyStoreFields(Item item, ItemOverrideDefinition def)
+    {
+        if (def.StorePrice.HasValue && !def.CreditsWorth.HasValue)
+        {
+            OPLog.Info("Overrides", $"Applying {item.name}.storePrice through creditsWorth: {item.creditsWorth} -> {def.StorePrice.Value}");
+            item.creditsWorth = def.StorePrice.Value;
+        }
+
+        if (def.AddToStore != true)
+            return;
+
+        var terminal = UnityEngine.Object.FindObjectOfType<Terminal>();
+        if (terminal == null)
+        {
+            OPLog.Warning("Overrides", $"Cannot add '{item.name}' to store because Terminal was not found.");
+            return;
+        }
+
+        if (terminal.buyableItemsList == null)
+        {
+            terminal.buyableItemsList = new[] { item };
+            EnsureSalesArrayLength(terminal);
+            OPLog.Info("Overrides", $"Added '{item.name}' to empty Terminal.buyableItemsList.");
+            return;
+        }
+
+        if (terminal.buyableItemsList.Any(existing => existing != null && existing.name == item.name))
+        {
+            OPLog.Info("Overrides", $"Item '{item.name}' is already present in Terminal.buyableItemsList.");
+            EnsureSalesArrayLength(terminal);
+            return;
+        }
+
+        var list = terminal.buyableItemsList.ToList();
+        list.Add(item);
+        terminal.buyableItemsList = list.ToArray();
+        EnsureSalesArrayLength(terminal);
+        OPLog.Info("Overrides", $"Added '{item.name}' to Terminal.buyableItemsList. storeCount={terminal.buyableItemsList.Length}");
+    }
+
+    private static void EnsureSalesArrayLength(Terminal terminal)
+    {
+        var count = terminal.buyableItemsList?.Length ?? 0;
+        if (count <= 0)
+            return;
+
+        if (terminal.itemSalesPercentages != null && terminal.itemSalesPercentages.Length >= count)
+            return;
+
+        var sales = new int[count];
+        if (terminal.itemSalesPercentages != null)
+        {
+            for (var i = 0; i < terminal.itemSalesPercentages.Length && i < sales.Length; i++)
+                sales[i] = terminal.itemSalesPercentages[i];
+        }
+
+        terminal.itemSalesPercentages = sales;
     }
 }

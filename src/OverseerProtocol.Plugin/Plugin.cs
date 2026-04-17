@@ -29,7 +29,6 @@ namespace OverseerProtocol
             
             Bootstrapper.Initialize(Logger);
             OPConfig.Bind(Config);
-            PresetBootstrapFeature.EnsureBuiltInPresets();
             RuntimeDiagnostics.LogBootSummary();
             OPLog.Info("Bootstrap", $"{ModName} cargando core phase...");
 

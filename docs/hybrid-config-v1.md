@@ -1,19 +1,12 @@
-# Hybrid Configuration V1
+# BepInEx Configuration V1
 
-OverseerProtocol now has two configuration layers:
-
-- `.cfg`: Simple user-facing switches, preset selection, and broad multipliers.
-- JSON: Detailed entity-level tuning for items, moons, and spawn pools.
-
-## BepInEx Config
-
-BepInEx generates the config at:
+OverseerProtocol ya no usa configuracion hibrida. La fuente editable es:
 
 ```text
 BepInEx/config/com.overseerprotocol.core.cfg
 ```
 
-Current entries:
+## Esquema
 
 ```ini
 [General]
@@ -25,112 +18,50 @@ EnableItemOverrides = true
 EnableMoonOverrides = true
 EnableSpawnOverrides = true
 
-[Validation]
-StrictValidation = false
-DryRunOverrides = false
+[Items]
+Shovel = enabled=false; displayName=Shovel; value=30; weight=1.13; scrap=false; store=false; storePrice=-1; battery=false; minValue=0; maxValue=0
 
-[Multipliers]
-EnableRuntimeMultipliers = true
-ItemWeightMultiplier = 1
-SpawnRarityMultiplier = 1
-RoutePriceMultiplier = 1
+[Moons]
+ExperimentationLevel = enabled=false; displayName=41 Experimentation; price=0; tier=B; riskLevel=3; description=; minScrap=8; maxScrap=12; interior=reserved
 
-[SemanticDifficulty]
-AggressionProfile = Balanced
+[Moons.InsideEnemies]
+ExperimentationLevel = enabled=false; entries=Centipede:50, HoarderBug:20
 
-[Progression]
-EnableProgressionStorage = true
-EnablePerkCatalog = true
+[Moons.OutsideEnemies]
+ExperimentationLevel = enabled=false; entries=MouthDog:10
 
-[Lobby]
-EnableLobbyRulesLoading = true
+[Moons.DaytimeEnemies]
+ExperimentationLevel = enabled=false; entries=RedLocustBees:20
 
-[ExperimentalMultiplayer]
-EnableExperimentalMultiplayer = false
-EnableExpandedLobbyPatch = false
-EnableLateJoinSafeMode = false
-EnableSpectatorModeScaffold = false
-EnableHandshakeCompatibilityChecks = true
-ExperimentalMaxPlayers = 4
-
-[RuntimeRules]
-EnableRuntimeRulesLoading = true
-
-[Admin]
-EnableAdminTerminalCommands = false
-AdminCommandPrefix = op
+[Moons.RouteMultiplier]
+ExperimentationLevel = enabled=false; multiplier=1
 ```
 
-## Preset Resolution
+Entradas generadas con `enabled=false` sirven como catalogo observado. Solo mutan runtime cuando cambias `enabled=true`.
 
-`ActivePreset` selects preset metadata and default multipliers. User-facing entity tuning is global to the current profile and lives in:
+## Lifecycle
 
-```text
-BepInEx/plugins/OverseerProtocol/overseer-data/items.json
-BepInEx/plugins/OverseerProtocol/overseer-data/moons/<MoonId>.json
-BepInEx/plugins/OverseerProtocol/overseer-data/utility-catalog.json
-```
+Startup:
 
-For example, this selects the `hardcore` preset multipliers:
+1. bind de config estatica;
+2. snapshot vanilla;
+3. exports diagnosticos opcionales;
+4. bind de catalogos `.cfg` por IDs reales;
+5. restore de snapshot;
+6. aplicacion de overrides habilitados.
 
-```ini
-[General]
-ActivePreset = hardcore
-```
+Reload:
 
-Preset names are sanitized before becoming folder names.
+1. relee `.cfg`;
+2. reconstruye overrides;
+3. restaura snapshot;
+4. reaplica.
 
-## Runtime Multipliers
+Reset:
 
-Runtime multipliers run after user JSON tuning.
+1. restaura snapshot;
+2. no toca archivos del usuario.
 
-- `ItemWeightMultiplier`: Multiplies every runtime item `weight`.
-- `SpawnRarityMultiplier`: Multiplies every runtime spawn rarity in inside, outside, and daytime pools.
-- `RoutePriceMultiplier`: Multiplies every runtime terminal route price.
-- Spawn rarities are clamped to `0..1000`.
-- Multiplier values are clamped by config to `0..10`.
+## No Autoritativo
 
-Exports still happen before tuning and multipliers when `EnableDataExport = true`, so exported catalogs remain the vanilla snapshot.
-
-## Validation Controls
-
-- `StrictValidation`: when enabled, any validation warning aborts the affected tuning flow. Validation errors always abort.
-- `DryRunOverrides`: when enabled, the mod still exports and validates configuration, but it does not apply item tuning, spawn tuning, moon tuning, runtime multipliers, or runtime rules.
-- `AbortOnInvalidOverrideBlock`: strict policy flag. When enabled, validation warnings abort the affected tuning flow instead of applying the sanitized subset.
-
-Before export, OverseerProtocol captures a lightweight in-memory runtime snapshot for item values and moon spawn pools. The snapshot is restored after export and before user tuning, keeping the exported catalogs and the mutation baseline aligned with vanilla runtime state.
-
-## Progression Storage
-
-`EnableProgressionStorage` creates and loads the V1 progression save file at:
-
-```text
-BepInEx/plugins/OverseerProtocol/overseer-data/saves/progression.json
-```
-
-This is data-only for now. Runtime perks are intentionally deferred until the tuning and admin tooling layers are stable.
-
-## Lobby Rules
-
-`EnableLobbyRulesLoading` creates and loads the V1 lobby rules file. This is also data-only for now; expanded lobby, late join, spectator mode, and handshake enforcement remain future runtime work.
-
-## Experimental Multiplayer
-
-Experimental multiplayer is disabled by default. It provides reflection-based scaffolding for expanded lobby diagnostics, late-join policy checks, spectator diagnostics, and future handshake/sync work.
-
-Current behavior:
-
-- `EnableExpandedLobbyPatch`: attempts to set known max-player integer fields/properties on known singleton objects. This is not guaranteed to patch UI, ownership, spawn lifecycle, or network approval.
-- `EnableLateJoinSafeMode`: evaluates late-join policy and blocks `Moon` mode by policy until state recovery exists.
-- `EnableSpectatorModeScaffold`: logs spectator readiness only; it does not control player lifecycle yet.
-- `EnableHandshakeCompatibilityChecks`: keeps local handshake comparison services available for future networking.
-
-## Runtime Rules
-
-`EnableRuntimeRulesLoading` creates and loads the V1 runtime rules file for future quota, deadline, travel discount, ship timing, weather reward, and moon-specific balancing.
-
-## Admin Terminal
-
-`EnableAdminTerminalCommands` enables the experimental Terminal hook. It is disabled by default because Terminal input patches are compatibility-sensitive.
-
-When enabled, commands use `AdminCommandPrefix`, which defaults to `op`.
+`overseer-data/exports/*.json`, `progression.json` y `perks.json` no son fuente de verdad para item/moon/spawn tuning.

@@ -1,7 +1,5 @@
 using OverseerProtocol.Configuration;
 using OverseerProtocol.Core.Logging;
-using OverseerProtocol.Core.Paths;
-using OverseerProtocol.Core.Serialization;
 using OverseerProtocol.Data.Models.Lobby;
 
 namespace OverseerProtocol.Features;
@@ -10,18 +8,21 @@ public sealed class LobbyRulesFeature
 {
     public LobbyRulesDefinition LoadOrCreate()
     {
-        var path = OPPaths.GetPresetLobbyRulesPath(OPConfig.ActivePresetName);
-        var rules = JsonFileReader.Read<LobbyRulesDefinition>(path);
-
-        if (rules == null)
+        var rules = new LobbyRulesDefinition
         {
-            rules = new LobbyRulesDefinition();
-            JsonFileWriter.Write(path, rules);
-            OPLog.Info("LobbyRules", $"Created lobby rules file at {path}");
-        }
+            MaxPlayers = OPConfig.LobbyMaxPlayers.Value,
+            EnableExpandedLobby = OPConfig.LobbyEnableExpandedLobby.Value,
+            AllowLateJoin = OPConfig.LobbyAllowLateJoin.Value,
+            LateJoinMode = OPConfig.LobbyLateJoinMode.Value,
+            EnableSpectatorMode = OPConfig.LobbyEnableSpectatorMode.Value,
+            RequireMatchingOverseerVersion = OPConfig.LobbyRequireMatchingOverseerVersion.Value,
+            RequireMatchingPreset = OPConfig.LobbyRequireMatchingPreset.Value,
+            SyncPresetToClients = OPConfig.LobbySyncPresetToClients.Value,
+            SyncOverridesToClients = OPConfig.LobbySyncOverridesToClients.Value
+        };
 
         rules = Normalize(rules);
-        OPLog.Info("LobbyRules", $"Loaded lobby rules from {path}: maxPlayers={rules.MaxPlayers}, lateJoin={rules.AllowLateJoin}, mode={rules.LateJoinMode}");
+        OPLog.Info("LobbyRules", $"Loaded lobby rules from .cfg: maxPlayers={rules.MaxPlayers}, lateJoin={rules.AllowLateJoin}, mode={rules.LateJoinMode}");
         return rules;
     }
 

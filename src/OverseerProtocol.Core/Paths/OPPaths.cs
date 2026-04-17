@@ -29,26 +29,11 @@ public static class OPPaths
     public static string EconomyExportRoot =>
         Path.Combine(ExportRoot, "economy");
 
-    public static string PresetsRoot =>
-        Path.Combine(DataRoot, "presets");
-
     public static string PersistenceRoot =>
         Path.Combine(DataRoot, "saves");
 
-    public static string RulesRoot =>
-        Path.Combine(DataRoot, "rules");
-
     public static string DefinitionsRoot =>
         Path.Combine(DataRoot, "definitions");
-
-    public static string MoonConfigRoot =>
-        Path.Combine(DataRoot, "moons");
-
-    public static string ItemsConfigPath =>
-        Path.Combine(DataRoot, "items.json");
-
-    public static string UtilityCatalogPath =>
-        Path.Combine(DataRoot, "utility-catalog.json");
 
     public static string ItemExportPath =>
         Path.Combine(ItemExportRoot, "items.json");
@@ -68,33 +53,8 @@ public static class OPPaths
     public static string ProgressionSavePath =>
         Path.Combine(PersistenceRoot, "progression.json");
 
-    public static string LobbyRulesPath =>
-        Path.Combine(RulesRoot, "lobby-rules.json");
-
-    public static string RuntimeRulesPath =>
-        Path.Combine(RulesRoot, "runtime-rules.json");
-
     public static string PerkCatalogPath =>
         Path.Combine(DefinitionsRoot, "perks.json");
-
-    public static string GetPresetRoot(string presetName) =>
-        Path.Combine(PresetsRoot, SanitizePathSegment(presetName));
-
-    public static string GetPresetManifestPath(string presetName) =>
-        Path.Combine(GetPresetRoot(presetName), "preset.json");
-
-    public static string GetPresetRulesRoot(string presetName) =>
-        Path.Combine(GetPresetRoot(presetName), "rules");
-
-    public static string GetPresetLobbyRulesPath(string presetName) =>
-        string.Equals(SanitizePathSegment(presetName), "default", System.StringComparison.OrdinalIgnoreCase)
-            ? LobbyRulesPath
-            : Path.Combine(GetPresetRulesRoot(presetName), "lobby-rules.json");
-
-    public static string GetPresetRuntimeRulesPath(string presetName) =>
-        string.Equals(SanitizePathSegment(presetName), "default", System.StringComparison.OrdinalIgnoreCase)
-            ? RuntimeRulesPath
-            : Path.Combine(GetPresetRulesRoot(presetName), "runtime-rules.json");
 
     public static void EnsureDirectories()
     {
@@ -106,27 +66,7 @@ public static class OPPaths
         Directory.CreateDirectory(EnemyExportRoot);
         Directory.CreateDirectory(SpawnExportRoot);
         Directory.CreateDirectory(EconomyExportRoot);
-        Directory.CreateDirectory(PresetsRoot);
         Directory.CreateDirectory(PersistenceRoot);
-        Directory.CreateDirectory(RulesRoot);
         Directory.CreateDirectory(DefinitionsRoot);
-        Directory.CreateDirectory(MoonConfigRoot);
-    }
-
-    public static string GetMoonConfigPath(string moonId) =>
-        Path.Combine(MoonConfigRoot, SanitizePathSegment(moonId) + ".json");
-
-    private static string SanitizePathSegment(string value)
-    {
-        var invalidChars = Path.GetInvalidFileNameChars();
-        var chars = value.Trim().ToCharArray();
-
-        for (var i = 0; i < chars.Length; i++)
-        {
-            if (System.Array.IndexOf(invalidChars, chars[i]) >= 0 || chars[i] == '/' || chars[i] == '\\')
-                chars[i] = '_';
-        }
-
-        return new string(chars);
     }
 }

@@ -15,9 +15,6 @@ public sealed class MoonOverrideValidator
         var report = new ValidationReport();
         var validatedCollection = new MoonOverrideCollection();
 
-        if (!references.HasExportedMoonCatalog)
-            report.Error("MOON_CATALOG_MISSING", "Moon overrides require a valid exported moon catalog.");
-
         if (!references.HasRuntimeMoonCatalog)
             report.Error("MOON_RUNTIME_CATALOG_MISSING", "Moon overrides require the runtime moon catalog to be loaded.");
 
@@ -49,12 +46,6 @@ public sealed class MoonOverrideValidator
                 continue;
             }
 
-            if (!references.ExportedMoonIds.Contains(moonOverride.MoonId))
-            {
-                report.Warning("MOON_ID_UNKNOWN", $"MoonId '{moonOverride.MoonId}' does not exist in the exported moon catalog. Skipping moon override.", $"{moonPath}.moonId");
-                continue;
-            }
-
             if (!references.RuntimeMoonIds.Contains(moonOverride.MoonId))
             {
                 report.Warning("MOON_ID_UNRESOLVED", $"MoonId '{moonOverride.MoonId}' does not exist in the runtime moon catalog. Skipping moon override.", $"{moonPath}.moonId");
@@ -72,12 +63,26 @@ public sealed class MoonOverrideValidator
                 MoonId = moonOverride.MoonId,
                 RiskLevel = ValidateRiskLevel(moonOverride.RiskLevel, report, $"{moonPath}.riskLevel", moonOverride.MoonId),
                 RiskLabel = ValidateRiskLabel(moonOverride.RiskLabel, report, $"{moonPath}.riskLabel", moonOverride.MoonId),
-                RoutePrice = ValidateRoutePrice(moonOverride.RoutePrice, references, report, $"{moonPath}.routePrice", moonOverride.MoonId)
+                RoutePrice = ValidateRoutePrice(moonOverride.RoutePrice, references, report, $"{moonPath}.routePrice", moonOverride.MoonId),
+                Description = ValidateDescription(moonOverride.Description, report, $"{moonPath}.description", moonOverride.MoonId),
+                MinScrap = ValidateScrapCount(moonOverride.MinScrap, report, $"{moonPath}.minScrap", moonOverride.MoonId, "minScrap"),
+                MaxScrap = ValidateScrapCount(moonOverride.MaxScrap, report, $"{moonPath}.maxScrap", moonOverride.MoonId, "maxScrap")
             };
+
+            if (validatedOverride.MinScrap.HasValue &&
+                validatedOverride.MaxScrap.HasValue &&
+                validatedOverride.MaxScrap.Value < validatedOverride.MinScrap.Value)
+            {
+                report.Warning("MOON_SCRAP_RANGE_REPAIRED", $"Moon '{moonOverride.MoonId}' maxScrap is below minScrap. maxScrap was raised to minScrap.", $"{moonPath}.maxScrap");
+                validatedOverride.MaxScrap = validatedOverride.MinScrap;
+            }
 
             if (!validatedOverride.RiskLevel.HasValue &&
                 string.IsNullOrWhiteSpace(validatedOverride.RiskLabel) &&
-                !validatedOverride.RoutePrice.HasValue)
+                !validatedOverride.RoutePrice.HasValue &&
+                string.IsNullOrWhiteSpace(validatedOverride.Description) &&
+                !validatedOverride.MinScrap.HasValue &&
+                !validatedOverride.MaxScrap.HasValue)
             {
                 report.Warning("MOON_OVERRIDE_EMPTY", $"Moon override for '{moonOverride.MoonId}' does not define any supported fields. Skipping moon override.", moonPath);
                 continue;
@@ -145,5 +150,43 @@ public sealed class MoonOverrideValidator
             report.Warning("MOON_ROUTE_PRICE_NODE_MISSING", $"Moon '{moonId}' has no exported route node. Runtime route price override may not find a terminal node.", path);
 
         return routePrice.Value;
+    }
+
+    private static string? ValidateDescription(string? description, ValidationReport report, string path, string moonId)
+    {
+        if (description == null)
+            return null;
+
+        var trimmed = description.Trim();
+        if (trimmed.Length == 0)
+            return null;
+
+        if (trimmed.Length > 512)
+        {
+            report.Warning("MOON_DESCRIPTION_LONG", $"Moon '{moonId}' description is longer than 512 characters. Field skipped.", path);
+            return null;
+        }
+
+        return trimmed;
+    }
+
+    private static int? ValidateScrapCount(int? value, ValidationReport report, string path, string moonId, string field)
+    {
+        if (!value.HasValue)
+            return null;
+
+        if (value.Value < 0)
+        {
+            report.Warning("MOON_SCRAP_COUNT_CLAMPED", $"Moon '{moonId}' {field} {value.Value} is below 0. Clamped to 0.", path);
+            return 0;
+        }
+
+        if (value.Value > 999)
+        {
+            report.Warning("MOON_SCRAP_COUNT_CLAMPED", $"Moon '{moonId}' {field} {value.Value} is above 999. Clamped to 999.", path);
+            return 999;
+        }
+
+        return value.Value;
     }
 }

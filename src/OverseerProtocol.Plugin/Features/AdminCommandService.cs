@@ -88,12 +88,9 @@ public sealed class AdminCommandService
     private static string GetPathsText() =>
         "DataRoot: " + OPPaths.DataRoot + "\n" +
         "Exports: " + OPPaths.ExportRoot + "\n" +
-        "Items config: " + OPPaths.ItemsConfigPath + "\n" +
-        "Moon configs: " + OPPaths.MoonConfigRoot + "\n" +
-        "Utility catalog: " + OPPaths.UtilityCatalogPath + "\n" +
-        "Presets: " + OPPaths.PresetsRoot + "\n" +
+        "Runtime config: BepInEx/config/com.overseerprotocol.core.cfg\n" +
         "Saves: " + OPPaths.PersistenceRoot + "\n" +
-        "Rules: " + OPPaths.RulesRoot;
+        "Definitions: " + OPPaths.DefinitionsRoot;
 
     private static string GetFingerprintText()
     {

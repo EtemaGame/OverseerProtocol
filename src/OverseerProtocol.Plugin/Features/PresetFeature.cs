@@ -1,9 +1,6 @@
 using System;
 using OverseerProtocol.Configuration;
 using OverseerProtocol.Core.Logging;
-using OverseerProtocol.Core.Paths;
-using OverseerProtocol.Core.Serialization;
-using OverseerProtocol.Data.Models.Presets;
 
 namespace OverseerProtocol.Features;
 
@@ -31,10 +28,10 @@ public sealed class PresetFeature
             return settings;
         }
 
-        var preset = LoadPreset(OPConfig.ActivePresetName);
+        var preset = BuiltInPresetDefinition.Resolve(OPConfig.ActivePresetName);
         if (preset == null)
         {
-            OPLog.Info("Presets", "Preset manifest unavailable. Effective multipliers remain cfg values.");
+            OPLog.Warning("Presets", $"Unknown built-in preset '{OPConfig.ActivePresetName}'. Effective multipliers remain cfg values.");
             return settings;
         }
 
@@ -77,25 +74,57 @@ public sealed class PresetFeature
         return settings;
     }
 
-    private PresetDefinition? LoadPreset(string presetName)
-    {
-        var path = OPPaths.GetPresetManifestPath(presetName);
-        var preset = JsonFileReader.Read<PresetDefinition>(path);
-
-        if (preset == null)
-        {
-            OPLog.Warning("Presets", $"Active preset '{presetName}' has no valid preset.json at {path}. Effective multipliers will stay on cfg values.");
-            return null;
-        }
-
-        if (string.IsNullOrWhiteSpace(preset.Id))
-            preset.Id = presetName;
-
-        return preset;
-    }
-
     private static bool IsDefaultMultiplier(float value) =>
         Math.Abs(value - DefaultMultiplier) < Epsilon;
+}
+
+internal sealed class BuiltInPresetDefinition
+{
+    public string Id { get; private set; } = "";
+    public string DisplayName { get; private set; } = "";
+    public float? ItemWeightMultiplier { get; private set; }
+    public float? SpawnRarityMultiplier { get; private set; }
+    public float? RoutePriceMultiplier { get; private set; }
+
+    public static BuiltInPresetDefinition? Resolve(string presetName)
+    {
+        var normalized = string.IsNullOrWhiteSpace(presetName)
+            ? OPConfig.DefaultPreset
+            : presetName.Trim();
+
+        switch (normalized.ToLowerInvariant())
+        {
+            case OPConfig.DefaultPreset:
+                return null;
+            case "vanilla-plus":
+                return Create("vanilla-plus", "Vanilla Plus", 1f, 1.1f, 1f);
+            case "hardcore":
+                return Create("hardcore", "Hardcore", 1.1f, 1.35f, 1.1f);
+            case "economy-chaos":
+                return Create("economy-chaos", "Economy Chaos", 1f, 1f, 1.5f);
+            case "outside-nightmare":
+                return Create("outside-nightmare", "Outside Nightmare", 1f, 1.25f, 1f);
+            case "scrap-heaven":
+                return Create("scrap-heaven", "Scrap Heaven", 0.9f, 1f, 0.9f);
+            default:
+                return null;
+        }
+    }
+
+    private static BuiltInPresetDefinition Create(
+        string id,
+        string displayName,
+        float itemWeightMultiplier,
+        float spawnRarityMultiplier,
+        float routePriceMultiplier) =>
+        new()
+        {
+            Id = id,
+            DisplayName = displayName,
+            ItemWeightMultiplier = itemWeightMultiplier,
+            SpawnRarityMultiplier = spawnRarityMultiplier,
+            RoutePriceMultiplier = routePriceMultiplier
+        };
 }
 
 public sealed class PresetRuntimeSettings

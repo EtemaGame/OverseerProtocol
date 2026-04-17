@@ -24,10 +24,10 @@ public sealed class SpawnOverrideValidator
         var validatedCollection = new SpawnOverrideCollection();
 
         if (!references.HasMoonCatalog)
-            report.Error("SPAWN_MOON_CATALOG_MISSING", "Spawn overrides require a valid exported moon catalog.");
+            report.Error("SPAWN_MOON_CATALOG_MISSING", "Spawn overrides require the runtime moon catalog.");
 
         if (!references.HasEnemyCatalog)
-            report.Error("SPAWN_ENEMY_CATALOG_MISSING", "Spawn overrides require a valid exported enemy catalog.");
+            report.Error("SPAWN_ENEMY_CATALOG_MISSING", "Spawn overrides require the runtime enemy registry.");
 
         if (report.HasErrors)
             return new SpawnOverrideValidationResult(validatedCollection, report);
@@ -59,7 +59,7 @@ public sealed class SpawnOverrideValidator
 
             if (!references.MoonIds.Contains(moonOverride.MoonId))
             {
-                report.Warning("SPAWN_MOON_ID_UNKNOWN", $"MoonId '{moonOverride.MoonId}' does not exist in the exported moon catalog. Skipping moon override.", $"{moonPath}.moonId");
+                report.Warning("SPAWN_MOON_ID_UNKNOWN", $"MoonId '{moonOverride.MoonId}' does not exist in the runtime moon catalog. Skipping moon override.", $"{moonPath}.moonId");
                 continue;
             }
 
@@ -119,7 +119,7 @@ public sealed class SpawnOverrideValidator
 
             if (!references.EnemyIds.Contains(entry.EnemyId))
             {
-                report.Warning("SPAWN_ENEMY_ID_UNKNOWN", $"[{moonId}] {poolName} enemy '{entry.EnemyId}' does not exist in the exported enemy catalog. Skipping entry.", $"{entryPath}.enemyId");
+                report.Warning("SPAWN_ENEMY_ID_UNKNOWN", $"[{moonId}] {poolName} enemy '{entry.EnemyId}' does not exist in the runtime enemy registry. Skipping entry.", $"{entryPath}.enemyId");
                 continue;
             }
 

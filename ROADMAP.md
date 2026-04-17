@@ -18,7 +18,7 @@ Regla guia:
 
 - Plugin BepInEx/Harmony y lifecycle inicial implementados; pendiente re-verificacion en el entorno actual.
 - Exports: items, moons, enemies, spawn profiles y moon economy implementados; pendiente re-verificacion runtime.
-- Item tuning, spawn tuning y moon tuning implementados desde `items.json` y `moons/*.json`; pendiente re-verificacion runtime.
+- Item tuning, spawn tuning y moon tuning implementados desde BepInEx `.cfg`; pendiente re-verificacion runtime.
 - Validacion con warnings/errors, strict mode y dry-run implementada; pendiente re-verificacion runtime.
 - Runtime multipliers para item weight, spawn rarity y route prices implementados; pendiente re-verificacion runtime.
 - Runtime snapshot para reset/reload implementado; pendiente re-verificacion runtime.
@@ -26,16 +26,16 @@ Regla guia:
 
 ### Producto / Data Layer Implementado, Pendiente De Re-Verificacion
 
-- `.cfg + JSON` como configuracion hibrida.
-- Presets con manifiesto y multipliers base.
-- Paths organizados para exports, tuning de usuario, presets, saves, rules y definitions.
+- BepInEx `.cfg` como fuente unica de verdad editable por el usuario.
+- Presets internos con multipliers base.
+- Paths organizados para exports diagnosticos, saves y definitions no autoritativas.
 - Docs tecnicas por subsistema.
-- Node local para validacion JSON de samples.
+- Exports JSON conservados solo como diagnostico no autoritativo.
 
 ### Contratos Data-Only Listos Para Integrar
 
-- `runtime-rules.json`: economia, weather, ship rules y moon rules.
-- `lobby-rules.json`: expanded lobby, late join modes y sync flags.
+- Runtime rules desde `.cfg`: travel discount y route multiplier per-moon activos; otros campos reservados.
+- Lobby rules desde `.cfg`: expanded lobby, late join modes y sync flags.
 - `progression.json`: progreso player/ship.
 - `perks.json`: catalogo seed de perks player/ship.
 - `ProtocolHandshakeDefinition`: fingerprints, feature flags y reglas host/client.
@@ -51,7 +51,7 @@ Tareas:
 
 - Corregir errores de build cuando haya SDK/runtime disponible.
 - Verificar carga BepInEx sin excepciones.
-- Confirmar generacion de exports, tuning de usuario, presets, saves, rules y definitions.
+- Confirmar generacion de exports diagnosticos y bind de entradas `.cfg` por ID.
 - Confirmar `DryRunOverrides`, strict validation y logs.
 - Confirmar snapshot, reset y reload.
 - Confirmar route price y moon risk en runtime.
@@ -66,7 +66,7 @@ Objetivo: convertir el nucleo en sistema usable por host/modpack maker.
 
 Tareas:
 
-- Formalizar precedencia: snapshot vanilla, preset, user JSON tuning, `.cfg` multipliers/toggles.
+- Formalizar precedencia: snapshot vanilla, preset interno, overrides `.cfg`, multipliers/toggles `.cfg`, runtime rules `.cfg`.
 - Completar docs de IDs, fields y contratos.
 - Consolidar validacion comun y `AbortOnInvalidOverrideBlock`.
 - Anadir metricas por fase: aplicados, omitidos, warnings, errores y duracion.
@@ -93,7 +93,7 @@ Tareas:
 
 Resultado:
 
-- `runtime-rules.json` empieza a producir gameplay real sin sobredimensionarse.
+- Runtime rules en `.cfg` empiezan a producir gameplay real sin sobredimensionarse.
 
 ### Fase 4 - Terminal/Admin Hook Apagable
 
@@ -160,7 +160,7 @@ Tareas:
   - weather reward tuning.
   - loot retention si hay hook seguro.
   - landing/dropship timing si hay hook seguro.
-- Integrar `runtime-rules.json` con presets y fingerprints.
+- Integrar runtime rules `.cfg` con presets y fingerprints.
 - Mostrar resumen desde `op rules`.
 
 Resultado:
@@ -250,7 +250,7 @@ Resultado:
 
 - Fase 1 se considera cerrada cuando el plugin compila, carga sin excepciones, genera exports/seeds esperados y valida snapshot/reload/reset en runtime.
 - Fase 2 se considera cerrada cuando la precedencia esta documentada, los logs muestran preset/config efectivos, las metricas por fase existen y los fingerprints aparecen en startup.
-- Fase 3 se considera cerrada cuando route price global/per-moon y travel discount aplican desde `runtime-rules.json` con campos marcados como `active`, `reserved` o `experimental`.
+- Fase 3 se considera cerrada cuando route price global/per-moon y travel discount aplican desde `.cfg` con campos marcados como `active`, `reserved` o `experimental`.
 - Fase 4 se considera cerrada cuando `EnableAdminTerminalCommands` permite apagar el hook, los comandos `op` funcionan y el flujo vanilla de Terminal no se rompe.
 - Fase 5 se considera cerrada cuando progression usa policy definida, los saves versionados migran sin corrupcion y los perk appliers conservadores tienen comandos debug.
 - Fase 6 se considera cerrada cuando el host puede configurar economia/run rules desde presets/rules y revisar el resumen efectivo con `op rules`.
@@ -304,7 +304,6 @@ Vocabulario base: `Implemented`, `Runtime Verified`, `Pending Runtime Verificati
 ### Sin Runtime
 
 - `git diff --check`.
-- Validacion JSON con Node local.
 - Revision estatica de paths/config/docs.
 - Build cuando `dotnet` este disponible.
 
@@ -312,7 +311,7 @@ Vocabulario base: `Implemented`, `Runtime Verified`, `Pending Runtime Verificati
 
 - Plugin carga en BepInEx.
 - Exports se generan correctamente.
-- JSON seeds aparecen en folders esperados.
+- No se generan seeds JSON editables.
 - Dry-run valida sin mutar.
 - Tuning de usuario aplica con logs claros.
 - Snapshot reset/reload funciona.
@@ -323,7 +322,7 @@ Vocabulario base: `Implemented`, `Runtime Verified`, `Pending Runtime Verificati
 
 ## Supuestos Oficiales
 
-- `default` usa `overseer-data/items.json`, `overseer-data/moons/*.json` y `overseer-data/rules`.
+- `default` usa la configuracion BepInEx `.cfg` y no depende de JSON editable.
 - Presets no sobrescriben archivos editados por usuario.
 - Todo hook delicado debe tener config para apagarse.
 - Todo campo no verificado debe quedar como data-only, reserved o experimental.
@@ -333,8 +332,8 @@ Vocabulario base: `Implemented`, `Runtime Verified`, `Pending Runtime Verificati
 
 - Este roadmap asume la version actual de Lethal Company validada contra la rama principal del mod.
 - Cualquier cambio fuerte en assemblies internos del juego puede mover subsistemas de vuelta a `Pending Runtime Verification`.
-- Todo contrato JSON persistente debe incluir `schemaVersion`.
-- Cambios incompatibles de schema deben documentar migracion, fallback o regeneracion segura.
+- Los exports JSON son diagnosticos no autoritativos.
+- Cambios incompatibles de `.cfg` deben documentar migracion o fallback sin sobrescribir al usuario.
 
 ## Rollback Policy
 

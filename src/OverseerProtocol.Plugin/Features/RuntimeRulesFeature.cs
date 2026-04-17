@@ -1,11 +1,6 @@
-using System;
-using System.IO;
 using OverseerProtocol.Configuration;
 using OverseerProtocol.Core.Logging;
-using OverseerProtocol.Core.Paths;
-using OverseerProtocol.Core.Serialization;
 using OverseerProtocol.Data.Models.Rules;
-using OverseerProtocol.Data.Models.UserConfig;
 using OverseerProtocol.GameAbstractions.Overrides;
 
 namespace OverseerProtocol.Features;
@@ -16,56 +11,17 @@ public sealed class RuntimeRulesFeature
 
     public RuntimeRulesDefinition LoadOrCreate()
     {
-        var path = OPPaths.GetPresetRuntimeRulesPath(OPConfig.ActivePresetName);
-        var rules = JsonFileReader.Read<RuntimeRulesDefinition>(path);
-
-        if (rules == null)
-        {
-            rules = new RuntimeRulesDefinition();
-            JsonFileWriter.Write(path, rules);
-            OPLog.Info("RuntimeRules", $"Created runtime rules file at {path}");
-        }
+        var rules = new RuntimeTuningConfig(OPConfig.ConfigFile).BuildRuntimeRules();
 
         Normalize(rules);
-        OPLog.Info("RuntimeRules", $"Loaded runtime rules from {path}: quota={rules.Economy.QuotaMultiplier:0.###}, deadline={rules.Economy.DeadlineMultiplier:0.###}, moonRules={rules.MoonRules.Count}");
+        OPLog.Info("RuntimeRules", $"Loaded runtime rules from .cfg: travelDiscount={rules.Economy.TravelDiscountMultiplier:0.###}, moonRules={rules.MoonRules.Count}");
         return rules;
     }
 
     public void Apply(RuntimeRulesDefinition rules)
     {
-        MergeMoonTuningRules(rules);
-        OPLog.Info("RuntimeRules", "Applying runtime rules. Active today: travelDiscountMultiplier and per-moon routePriceMultiplier. Reserved fields will log warnings.");
+        OPLog.Info("RuntimeRules", "Applying runtime rules from .cfg. Active today: travelDiscountMultiplier and per-moon routePriceMultiplier.");
         _applier.Apply(rules);
-    }
-
-    private static void MergeMoonTuningRules(RuntimeRulesDefinition rules)
-    {
-        if (rules == null || !Directory.Exists(OPPaths.MoonConfigRoot))
-            return;
-
-        rules.MoonRules ??= new System.Collections.Generic.Dictionary<string, MoonRuntimeRuleDefinition>();
-
-        foreach (var path in Directory.GetFiles(OPPaths.MoonConfigRoot, "*.json"))
-        {
-            var moonConfig = JsonFileReader.Read<UserMoonConfigFile>(path);
-            if (moonConfig == null ||
-                string.IsNullOrWhiteSpace(moonConfig.MoonId) ||
-                !moonConfig.Enabled ||
-                moonConfig.MissingFromRuntime ||
-                moonConfig.Override?.RoutePriceMultiplier == null)
-            {
-                continue;
-            }
-
-            if (!rules.MoonRules.TryGetValue(moonConfig.MoonId, out var moonRule) || moonRule == null)
-            {
-                moonRule = new MoonRuntimeRuleDefinition();
-                rules.MoonRules[moonConfig.MoonId] = moonRule;
-            }
-
-            moonRule.RoutePriceMultiplier = moonConfig.Override.RoutePriceMultiplier.Value;
-            OPLog.Info("RuntimeRules", $"Merged moon tuning routePriceMultiplier: moon={moonConfig.MoonId}, multiplier={moonRule.RoutePriceMultiplier:0.###}");
-        }
     }
 
     private static void Normalize(RuntimeRulesDefinition rules)
