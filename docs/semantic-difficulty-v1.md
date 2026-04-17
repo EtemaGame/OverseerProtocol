@@ -11,7 +11,7 @@ BepInEx/config/com.overseerprotocol.core.cfg
 ```
 
 ```ini
-[SemanticDifficulty]
+[Multipliers]
 AggressionProfile = Balanced
 ```
 

@@ -3,8 +3,8 @@
 Lobby rules are configured in `BepInEx/config/com.overseerprotocol.core.cfg`.
 
 ```ini
-[Lobby]
-EnableLobbyRulesLoading = true
+[Multiplayer]
+EnableMultiplayerRules = true
 MaxPlayers = 4
 EnableExpandedLobby = false
 AllowLateJoin = false

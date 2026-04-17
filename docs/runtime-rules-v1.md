@@ -3,10 +3,8 @@
 Runtime rules se configuran en BepInEx `.cfg`, no en JSON.
 
 ```ini
-[RuntimeRules]
-EnableRuntimeRulesLoading = true
-
-[RuntimeRules.Economy]
+[Multipliers]
+EnableRouteRules = true
 TravelDiscountMultiplier = 1
 
 [Moons.RouteMultiplier]
@@ -17,7 +15,7 @@ ExperimentationLevel = 1
 
 Activo hoy:
 
-- `RuntimeRules.Economy.TravelDiscountMultiplier` multiplica precios de rutas de Terminal.
+- `Multipliers.TravelDiscountMultiplier` multiplica precios de rutas de Terminal.
 - `Moons.RouteMultiplier.<MoonId>` aplica un multiplier per-moon a rutas de Terminal.
 - `Multipliers.RoutePriceMultiplier` sigue siendo el multiplier global simple y se aplica antes de runtime rules.
 

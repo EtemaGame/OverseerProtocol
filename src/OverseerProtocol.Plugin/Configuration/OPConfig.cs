@@ -71,19 +71,19 @@ public static class OPConfig
             "Built-in preset/profile name used as a base for runtime multipliers. User overrides in this .cfg win over preset defaults.");
 
         EnableItemOverrides = config.Bind(
-            "Overrides",
+            "General",
             "EnableItemOverrides",
             true,
-            "Applies supported item edits from the [Items] entity catalog. Active fields: value, weight.");
+            "Applies supported item edits from the [Items] entity catalog.");
 
         EnableMoonOverrides = config.Bind(
-            "Overrides",
+            "General",
             "EnableMoonOverrides",
             true,
-            "Applies supported moon edits from the [Moons] entity catalog. Active fields: price, tier/riskLabel, riskLevel.");
+            "Applies supported moon edits from the [Moons] entity catalog.");
 
         EnableSpawnOverrides = config.Bind(
-            "Overrides",
+            "General",
             "EnableSpawnOverrides",
             true,
             "Applies supported spawn pool edits from [Moons.InsideEnemies], [Moons.OutsideEnemies], and [Moons.DaytimeEnemies].");
@@ -95,45 +95,45 @@ public static class OPConfig
             "Applies simple .cfg multipliers after explicit item/moon/spawn overrides.");
 
         EnableProgressionStorage = config.Bind(
-            "Progression",
+            "Perks",
             "EnableProgressionStorage",
             true,
             "Creates and loads the progression save file used by future player and ship perks.");
 
         EnablePerkCatalog = config.Bind(
-            "Progression",
+            "Perks",
             "EnablePerkCatalog",
             true,
             "Creates and loads perks.json definitions for future player and ship perk application.");
 
         EnableLobbyRulesLoading = config.Bind(
-            "Lobby",
-            "EnableLobbyRulesLoading",
+            "Multiplayer",
+            "EnableMultiplayerRules",
             true,
-            "Applies lobby rules from this .cfg for future expanded lobby, late join, and sync enforcement.");
+            "Loads multiplayer rules from this .cfg.");
 
         LobbyMaxPlayers = config.Bind(
-            "Lobby",
+            "Multiplayer",
             "MaxPlayers",
             4,
             new ConfigDescription(
-                "Lobby rule max players. ExperimentalMaxPlayers can still cap reflection patching.",
+                "Requested max players. Experimental patches are still required above vanilla limits.",
                 new AcceptableValueRange<int>(1, 64)));
 
         LobbyEnableExpandedLobby = config.Bind(
-            "Lobby",
+            "Multiplayer",
             "EnableExpandedLobby",
             false,
-            "Lobby rule that allows the experimental expanded lobby patch to run when its feature flag is also enabled.");
+            "Allows the experimental expanded lobby patch to run when the multiplayer patch switch is enabled.");
 
         LobbyAllowLateJoin = config.Bind(
-            "Lobby",
+            "Multiplayer",
             "AllowLateJoin",
             false,
             "Lobby rule for late-join diagnostics. Full moon-state recovery is not implemented.");
 
         LobbyLateJoinMode = config.Bind(
-            "Lobby",
+            "Multiplayer",
             "LateJoinMode",
             "Disabled",
             new ConfigDescription(
@@ -141,103 +141,103 @@ public static class OPConfig
                 new AcceptableValueList<string>("Disabled", "Lobby", "Orbit", "Moon")));
 
         LobbyEnableSpectatorMode = config.Bind(
-            "Lobby",
+            "Multiplayer",
             "EnableSpectatorMode",
             false,
             "Lobby rule for spectator-mode diagnostics. Runtime spectator control is reserved.");
 
         LobbyRequireMatchingOverseerVersion = config.Bind(
-            "Lobby",
+            "Multiplayer",
             "RequireMatchingOverseerVersion",
             true,
             "Reserved handshake policy: require matching OverseerProtocol version.");
 
         LobbyRequireMatchingPreset = config.Bind(
-            "Lobby",
+            "Multiplayer",
             "RequireMatchingPreset",
             true,
             "Reserved handshake policy: require matching active preset.");
 
         LobbySyncPresetToClients = config.Bind(
-            "Lobby",
+            "Multiplayer",
             "SyncPresetToClients",
             true,
             "Reserved sync policy: host preset should be sent to clients when sync exists.");
 
         LobbySyncOverridesToClients = config.Bind(
-            "Lobby",
+            "Multiplayer",
             "SyncOverridesToClients",
             false,
             "Reserved sync policy: host .cfg overrides should be sent to clients when sync exists.");
 
         EnableExperimentalMultiplayer = config.Bind(
-            "ExperimentalMultiplayer",
-            "EnableExperimentalMultiplayer",
+            "Multiplayer",
+            "EnableExperimentalPatches",
             false,
-            "Master switch for experimental multiplayer scaffolding. Disabled by default.");
+            "Master switch for experimental multiplayer patches. Disabled by default.");
 
         EnableExpandedLobbyPatch = config.Bind(
-            "ExperimentalMultiplayer",
+            "Multiplayer",
             "EnableExpandedLobbyPatch",
             false,
-            "Experimental. Attempts reflection-based max player patching using Lobby .cfg rules.");
+            "Experimental. Attempts reflection-based max player patching.");
 
         EnableLateJoinSafeMode = config.Bind(
-            "ExperimentalMultiplayer",
+            "Multiplayer",
             "EnableLateJoinSafeMode",
             false,
             "Experimental. Enables late-join policy evaluation and diagnostics; does not provide full moon state recovery.");
 
         EnableSpectatorModeScaffold = config.Bind(
-            "ExperimentalMultiplayer",
+            "Multiplayer",
             "EnableSpectatorModeScaffold",
             false,
             "Experimental. Enables spectator-mode diagnostics and command scaffolding only.");
 
         EnableHandshakeCompatibilityChecks = config.Bind(
-            "ExperimentalMultiplayer",
+            "Multiplayer",
             "EnableHandshakeCompatibilityChecks",
             true,
             "Enables local handshake compatibility diagnostics for future host/client sync.");
 
         EnableRuntimeRulesLoading = config.Bind(
-            "RuntimeRules",
-            "EnableRuntimeRulesLoading",
+            "Multipliers",
+            "EnableRouteRules",
             true,
-            "Applies runtime rules from this .cfg. JSON runtime-rules files are not used as configuration.");
+            "Applies travel discount and per-moon route multipliers.");
 
         EnableAdminTerminalCommands = config.Bind(
-            "Admin",
+            "General",
             "EnableAdminTerminalCommands",
             false,
             "Experimental. Enables OverseerProtocol admin commands in the in-game Terminal.");
 
         AdminCommandPrefix = config.Bind(
-            "Admin",
+            "General",
             "AdminCommandPrefix",
             "op",
             "Prefix used by OverseerProtocol admin terminal commands.");
 
         StrictValidation = config.Bind(
-            "Validation",
+            "General",
             "StrictValidation",
             false,
             "When true, any validation warning aborts the affected tuning flow. Errors always abort.");
 
         DryRunOverrides = config.Bind(
-            "Validation",
+            "General",
             "DryRunOverrides",
             false,
             "When true, .cfg tuning is loaded and validated but no runtime mutations are applied.");
 
         AbortOnInvalidOverrideBlock = config.Bind(
-            "Validation",
+            "General",
             "AbortOnInvalidOverrideBlock",
             false,
             "Reserved policy flag for stricter validators. When true, invalid tuning blocks should abort the affected flow instead of being skipped.");
 
         AggressionProfile = config.Bind(
-            "SemanticDifficulty",
+            "Multipliers",
             "AggressionProfile",
             "Balanced",
             new ConfigDescription(
@@ -269,7 +269,7 @@ public static class OPConfig
                 new AcceptableValueRange<float>(0f, 10f)));
 
         TravelDiscountMultiplier = config.Bind(
-            "RuntimeRules.Economy",
+            "Multipliers",
             "TravelDiscountMultiplier",
             1f,
             new ConfigDescription(
@@ -277,11 +277,11 @@ public static class OPConfig
                 new AcceptableValueRange<float>(0f, 10f)));
 
         ExperimentalMaxPlayers = config.Bind(
-            "ExperimentalMultiplayer",
+            "Multiplayer",
             "ExperimentalMaxPlayers",
             4,
             new ConfigDescription(
-                "Upper bound used by experimental expanded lobby patching. Lobby.MaxPlayers may lower this value.",
+                "Upper bound used by experimental expanded lobby patching. MaxPlayers may lower this value.",
                 new AcceptableValueRange<int>(1, 64)));
     }
 

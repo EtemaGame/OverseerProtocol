@@ -19,8 +19,6 @@ public sealed class EnemyTypeRegistry
             return;
         }
 
-        OPLog.Info("Registry", "Scanning levels to build enemy type registry...");
-
         foreach (var level in StartOfRound.Instance.levels)
         {
             if (level == null) continue;
@@ -55,14 +53,13 @@ public sealed class EnemyTypeRegistry
             }
 
             _registry.Add(id, type);
-            OPLog.Info("Registry", $"Registered Enemy: {id} (Source: {moonId} {poolName})");
         }
     }
 
     public EnemyType? GetEnemy(string id)
     {
         var found = _registry.TryGetValue(id, out var type);
-        OPLog.Info("Registry", $"Enemy lookup: id={id}, found={found}");
+        OPLog.Debug("Registry", $"Enemy lookup: id={id}, found={found}");
         return found ? type : null;
     }
 }

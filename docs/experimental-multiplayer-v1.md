@@ -5,8 +5,8 @@ This layer exists because expanded lobby, late join, spectator mode, and state s
 ## Config
 
 ```ini
-[ExperimentalMultiplayer]
-EnableExperimentalMultiplayer = false
+[Multiplayer]
+EnableExperimentalPatches = false
 EnableExpandedLobbyPatch = false
 EnableLateJoinSafeMode = false
 EnableSpectatorModeScaffold = false

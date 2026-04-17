@@ -59,7 +59,6 @@ public sealed class RuntimeRulesApplier
             if (IsNoOp(multiplier))
             {
                 skippedNoOpCount++;
-                OPLog.Info("RuntimeRules", $"Route node no-op: node={node.name}, moonIndex={node.buyRerouteToMoon}, cost={originalCost}, multiplier={multiplier:0.###}");
                 continue;
             }
 
@@ -94,7 +93,6 @@ public sealed class RuntimeRulesApplier
             !rules.MoonRules.TryGetValue(level.name, out var moonRule) ||
             moonRule == null)
         {
-            OPLog.Info("RuntimeRules", $"No per-moon route rule for moon={level.name}. Using multiplier 1.");
             return NoOpMultiplier;
         }
 

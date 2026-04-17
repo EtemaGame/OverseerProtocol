@@ -11,7 +11,7 @@ BepInEx/plugins/OverseerProtocol/overseer-data/saves/progression.json
 Config gate:
 
 ```ini
-[Progression]
+[Perks]
 EnableProgressionStorage = true
 ```
 
@@ -59,7 +59,7 @@ BepInEx/plugins/OverseerProtocol/overseer-data/definitions/perks.json
 Config gate:
 
 ```ini
-[Progression]
+[Perks]
 EnablePerkCatalog = true
 ```
 

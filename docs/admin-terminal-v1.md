@@ -52,7 +52,7 @@ The experimental hook patches the game `Terminal` input flow and passes submitte
 It is controlled by:
 
 ```ini
-[Admin]
+[General]
 EnableAdminTerminalCommands = false
 AdminCommandPrefix = op
 ```

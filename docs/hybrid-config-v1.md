@@ -13,7 +13,7 @@ BepInEx/config/com.overseerprotocol.core.cfg
 EnableDataExport = true
 ActivePreset = default
 
-[Overrides]
+[General]
 EnableItemOverrides = true
 EnableMoonOverrides = true
 EnableSpawnOverrides = true

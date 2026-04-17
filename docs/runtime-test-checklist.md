@@ -46,13 +46,9 @@ Expected:
 - pool is replaced;
 - invalid enemy IDs warn and are skipped.
 
-## Reserved Sections
+## Planned Sections
 
-- `[Interiors]`
-- `[Utility]`
-- `[Perks]`
-
-These should not mutate runtime yet.
+`Interiors` and `Utility` should not be generated until runtime appliers exist. `Perks` should only expose real persistence/perk flags, not placeholder rows.
 
 ## Commands
 

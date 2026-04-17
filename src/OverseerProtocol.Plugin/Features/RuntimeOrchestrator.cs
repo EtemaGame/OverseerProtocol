@@ -112,7 +112,6 @@ public sealed class RuntimeOrchestrator
         config.BuildMoonOverrides();
         config.BuildSpawnOverrides();
         config.BuildRuntimeRules();
-        config.BindReservedScaffolds();
         OPConfig.ConfigFile.Save();
         OPLog.Info("Config", "Runtime .cfg entries were bound and saved for discovered item, moon, and spawn IDs.");
         metrics.Applied();

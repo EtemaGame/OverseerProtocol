@@ -221,25 +221,6 @@ public sealed class RuntimeTuningConfig
         return rules;
     }
 
-    public void BindReservedScaffolds()
-    {
-        _config.Bind(
-            "Interiors",
-            "Reserved",
-            "enabled=false; note=Interior selection, loot tables, and interior enemy tables need verified dungeon-flow hooks before runtime application.",
-            "Reserved. Documents planned interior tuning without pretending it is active.");
-        _config.Bind(
-            "Utility",
-            "Reserved",
-            "enabled=false; note=FPS, latency, and connection tuning need separate verified performance/network patches.",
-            "Reserved. Documents planned utility tuning without pretending it is active.");
-        _config.Bind(
-            "Perks",
-            "Reserved",
-            "enabled=false; note=Perk costs, max levels, and point sources need gameplay hooks before runtime application.",
-            "Reserved. Documents planned perk tuning without pretending it is active.");
-    }
-
     private List<SpawnEntry>? ResolveEnemyPool(string moonId, string poolName, List<SpawnableEnemyWithRarity>? observedPool)
     {
         var entry = _config.Bind(

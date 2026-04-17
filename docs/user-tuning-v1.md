@@ -77,28 +77,16 @@ Cuando `enabled=true`, el pool se reemplaza por `entries`. Si `entries` esta vac
 ItemWeightMultiplier = 1
 SpawnRarityMultiplier = 1
 RoutePriceMultiplier = 1
-
-[RuntimeRules.Economy]
 TravelDiscountMultiplier = 1
+AggressionProfile = Balanced
 
 [Moons.RouteMultiplier]
 AdamanceLevel = enabled=false; multiplier=1
 ```
 
-## Reservados
+## Secciones Planeadas
 
-Estas secciones existen para dejar clara la vision del mod, pero no aplican gameplay hasta que haya hooks verificados:
-
-```ini
-[Interiors]
-Reserved = enabled=false; note=...
-
-[Utility]
-Reserved = enabled=false; note=...
-
-[Perks]
-Reserved = enabled=false; note=...
-```
+`Interiors` y `Utility` no se generan todavia porque no tienen appliers runtime verificados. `Perks` solo contiene flags reales de persistencia/catalogo hasta que existan perks aplicables.
 
 ## Precedencia Runtime
 
