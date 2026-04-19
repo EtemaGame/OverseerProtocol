@@ -60,6 +60,8 @@ internal sealed record HostVanillaInput(
     string OriginalLobbyTag,
     string OriginalTipText,
     GameObject HostSettingsScreen,
+    GameObject? MenuButtonsRoot,
+    bool MenuButtonsWereActive,
     Transform CanvasRoot);
 
 internal sealed record PresetSummary(string Id, string DisplayName, bool IsBuiltIn);

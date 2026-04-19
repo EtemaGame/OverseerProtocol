@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using HarmonyLib;
-using OverseerProtocol.Features.HostFlow.AdvancedCompanyPort;
+using OverseerProtocol.Features.HostFlow.OverseerHostScreen;
 using OverseerProtocol.Core.Logging;
 using UnityEngine;
 
@@ -10,7 +10,6 @@ namespace OverseerProtocol.Features.HostFlow;
 
 internal sealed class OverseerHostScreenBootstrap
 {
-    private readonly AdvancedCompanyAssetLoader _assetLoader = new();
     private readonly Dictionary<int, ScreenHandle> _screens = new();
 
     public bool TryPrepare(MenuManager menu, out IOverseerHostScreen? screen, out string error)
@@ -111,20 +110,17 @@ internal sealed class OverseerHostScreenBootstrap
 
         try
         {
-            if (!_assetLoader.TryLoadLobbyScreenPrefab(out var prefab, out error))
-                return false;
-
-            var root = new GameObject("OverseerAdvancedCompanyHostScreen");
+            var root = new GameObject("OverseerHostScreen");
             root.transform.SetParent(canvas, false);
-            var adapter = root.AddComponent<AdvancedCompanyHostScreenAdapter>();
-            adapter.Initialize(prefab);
+            var adapter = root.AddComponent<OverseerHostScreenAdapter>();
+            adapter.Initialize();
             screen = adapter;
-            OPLog.Info("HostFlow", "Prepared AdvancedCompany host screen port.");
+            OPLog.Info("HostFlow", "Prepared Overseer host screen.");
             return true;
         }
         catch (Exception ex)
         {
-            error = "Could not create AdvancedCompany host screen: " + ex.Message;
+            error = "Could not create Overseer host screen: " + ex.Message;
             OPLog.Warning("HostFlow", error);
             return false;
         }

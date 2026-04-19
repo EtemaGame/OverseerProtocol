@@ -5,7 +5,7 @@ using System.IO;
 using BepInEx;
 using OverseerProtocol.Configuration;
 
-namespace OverseerProtocol.Features.HostFlow.AdvancedCompanyPort;
+namespace OverseerProtocol.Features.HostFlow.OverseerHostScreen;
 
 internal sealed class OverseerHostPresetStore
 {

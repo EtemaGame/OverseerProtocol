@@ -6,7 +6,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AdvancedCompany\AdvancedCompany.csproj" />
     <ProjectReference Include="..\OverseerProtocol.Core\OverseerProtocol.Core.csproj" />
     <ProjectReference Include="..\OverseerProtocol.Data\OverseerProtocol.Data.csproj" />
     <ProjectReference Include="..\OverseerProtocol.GameAbstractions\OverseerProtocol.GameAbstractions.csproj" />
@@ -57,13 +56,6 @@
       <HintPath>$(GameReferences)UnityEngine.TextRenderingModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="$(ReferencesRoot)AdvancedCompany-1.1.29\BepInEx\plugins\advancedcompany\advancedcompanyassets">
-      <Link>advancedcompanyassets</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
 
 </Project>

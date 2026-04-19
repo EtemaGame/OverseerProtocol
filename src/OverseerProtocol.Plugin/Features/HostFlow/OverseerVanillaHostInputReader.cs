@@ -78,6 +78,8 @@ internal sealed class OverseerVanillaHostInputReader
                 originalLobbyTag,
                 originalTipText,
                 menu.HostSettingsScreen,
+                menu.menuButtons,
+                menu.menuButtons != null && menu.menuButtons.activeSelf,
                 canvas!);
             return true;
         }
@@ -114,6 +116,8 @@ internal sealed class OverseerVanillaHostInputReader
     {
         if (IsAlive(input.HostSettingsScreen))
             input.HostSettingsScreen.SetActive(false);
+        if (IsAlive(input.MenuButtonsRoot))
+            input.MenuButtonsRoot!.SetActive(false);
     }
 
     public void RestoreHostSettings(HostVanillaInput input)
@@ -128,6 +132,8 @@ internal sealed class OverseerVanillaHostInputReader
 
         if (IsAlive(input.HostSettingsScreen))
             input.HostSettingsScreen.SetActive(true);
+        if (input.MenuButtonsWereActive && IsAlive(input.MenuButtonsRoot))
+            input.MenuButtonsRoot!.SetActive(true);
     }
 
     private static Transform? ResolveCanvasRoot(MenuManager menu)

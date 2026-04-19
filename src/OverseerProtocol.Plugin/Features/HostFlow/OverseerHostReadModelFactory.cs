@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using OverseerProtocol.Configuration;
 using OverseerProtocol.Core.Logging;
-using OverseerProtocol.Features.HostFlow.AdvancedCompanyPort;
+using OverseerProtocol.Features.HostFlow.OverseerHostScreen;
 
 namespace OverseerProtocol.Features.HostFlow;
 
