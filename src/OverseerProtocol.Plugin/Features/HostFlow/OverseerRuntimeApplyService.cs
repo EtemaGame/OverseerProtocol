@@ -14,6 +14,17 @@ internal sealed class OverseerRuntimeApplyService
             if (plan == null)
                 return Failure("Host plan is missing.");
 
+            if (!plan.Runtime.ShouldMaterializeConfig)
+            {
+                return new HostFlowOperationResult(
+                    Success: true,
+                    CanContinue: true,
+                    FailureStage: HostFailureStage.None,
+                    Errors: Array.Empty<string>(),
+                    Warnings: new[] { "Pre-host config materialization was skipped by the runtime plan." },
+                    TelemetryCode: "host_runtime_materialize_skipped");
+            }
+
             MaterializeConfig(plan.Runtime.Draft);
             var post = new FingerprintFeature().ComputeCurrent();
             OPLog.Info(
@@ -96,7 +107,7 @@ internal sealed class OverseerRuntimeApplyService
         BindInt(section, "Value", item.Value, "Item value/store price.", 0, 99999).Value = item.Value;
         BindFloat(section, "Weight", item.Weight, "Item weight multiplier.", 0f, 100f).Value = item.Weight;
         BindBool(section, "IsScrap", item.IsScrap, "Whether the item is scrap.").Value = item.IsScrap;
-        BindBool(section, "InStore", false, "Whether this item should be present in the Terminal store.");
+        BindBool(section, "InStore", false, "Whether this item should be present in the Terminal store.").Value = item.InStore;
         BindInt(section, "StorePrice", item.Value, "Price used when the item is in the Terminal store.", 0, 99999).Value = item.Value;
         BindInt(section, "MinScrapValue", item.MinScrapValue, "Minimum scrap value.", 0, 99999).Value = item.MinScrapValue;
         BindInt(section, "MaxScrapValue", item.MaxScrapValue, "Maximum scrap value.", 0, 99999).Value = item.MaxScrapValue;

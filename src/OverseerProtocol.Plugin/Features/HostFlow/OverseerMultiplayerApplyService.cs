@@ -9,6 +9,20 @@ internal sealed class OverseerMultiplayerApplyService
     {
         try
         {
+            if (plan == null)
+            {
+                return new HostFlowOperationResult(
+                    Success: false,
+                    CanContinue: false,
+                    FailureStage: HostFailureStage.MultiplayerPreHostApply,
+                    Errors: new[] { "Host plan is missing." },
+                    Warnings: Array.Empty<string>(),
+                    TelemetryCode: "host_multiplayer_pre_missing_plan");
+            }
+
+            if (!plan.Multiplayer.EnableMultiplayer)
+                return Success(Array.Empty<string>());
+
             if (GameNetworkManager.Instance == null)
             {
                 return new HostFlowOperationResult(
@@ -41,6 +55,20 @@ internal sealed class OverseerMultiplayerApplyService
     {
         try
         {
+            if (plan == null)
+            {
+                return new HostFlowOperationResult(
+                    Success: false,
+                    CanContinue: true,
+                    FailureStage: HostFailureStage.MultiplayerPostHostApply,
+                    Errors: Array.Empty<string>(),
+                    Warnings: new[] { "Host started, but multiplayer post-host apply did not run because the host plan was missing." },
+                    TelemetryCode: "host_multiplayer_post_missing_plan");
+            }
+
+            if (!plan.Multiplayer.EnableMultiplayer)
+                return Success(Array.Empty<string>());
+
             new MultiplayerFeature().Apply();
             return Success(Array.Empty<string>());
         }

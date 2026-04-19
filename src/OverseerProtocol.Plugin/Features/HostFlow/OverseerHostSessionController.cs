@@ -234,8 +234,9 @@ internal sealed class OverseerHostSessionController
 
         _startedHost = true;
         var multiplayerPostHost = _multiplayerApplyService.ApplyPostHost(plan);
-        if (!multiplayerPostHost.Success && multiplayerPostHost.Warnings.Count > 0)
-            OPLog.Warning("HostFlow", string.Join("\n", multiplayerPostHost.Warnings));
+        var finalWarnings = CombineWarnings(informationalWarnings, runtimeApply.Warnings, multiplayerPreHost.Warnings, multiplayerPostHost.Warnings);
+        if (finalWarnings.Length > 0)
+            OPLog.Warning("HostFlow", "Host flow completed with warnings:\n" + string.Join("\n", finalWarnings));
 
         _screen.Close();
         DetachScreenEvents(_screen);
@@ -246,6 +247,8 @@ internal sealed class OverseerHostSessionController
     private void ReturnToEditingWithError(string error)
     {
         State = HostFlowState.Editing;
+        _pendingWarningPlan = null;
+        _pendingInformationalWarnings = Array.Empty<string>();
         _screen?.SetBusy(false);
         _screen?.ShowError(error);
     }

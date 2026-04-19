@@ -25,7 +25,9 @@ internal sealed class OverseerEffectiveConfigBuilder
                 return Failure("Host profile is missing.");
 
             var buildWarnings = new List<string>();
-            var activePreset = ResolvePreset(profile.ActivePresetId, buildWarnings);
+            if (!TryResolvePreset(profile.ActivePresetId, buildWarnings, out var activePreset, out var presetError))
+                return Failure(presetError);
+
             var draft = profile.Draft;
 
             var snapshot = SnapshotDraft(draft, activePreset.Id);
@@ -74,16 +76,30 @@ internal sealed class OverseerEffectiveConfigBuilder
         }
     }
 
-    private static LobbyPresetDefinition ResolvePreset(string presetId, List<string> warnings)
+    private static bool TryResolvePreset(string presetId, List<string> warnings, out LobbyPresetDefinition preset, out string error)
     {
+        preset = null!;
+        error = "";
         var requested = string.IsNullOrWhiteSpace(presetId) ? OPConfig.DefaultPreset : presetId.Trim();
         var match = LobbyPresetDefinition.All.FirstOrDefault(preset =>
             string.Equals(preset.Id, requested, StringComparison.OrdinalIgnoreCase));
         if (match != null)
-            return match;
+        {
+            preset = match;
+            return true;
+        }
 
         warnings.Add("Preset '" + requested + "' was not found; default will be used.");
-        return LobbyPresetDefinition.Resolve(OPConfig.DefaultPreset);
+        var defaultPreset = LobbyPresetDefinition.All.FirstOrDefault(preset =>
+            string.Equals(preset.Id, OPConfig.DefaultPreset, StringComparison.OrdinalIgnoreCase));
+        if (defaultPreset == null)
+        {
+            error = "Default preset '" + OPConfig.DefaultPreset + "' was not found.";
+            return false;
+        }
+
+        preset = defaultPreset;
+        return true;
     }
 
     private static HostDraftSnapshot SnapshotDraft(TuningDraftStore draft, string activePresetId) =>
@@ -117,6 +133,7 @@ internal sealed class OverseerEffectiveConfigBuilder
                     item.Baseline.DisplayName,
                     item.Enabled,
                     item.Value,
+                    InStore: false,
                     item.Weight,
                     item.IsScrap,
                     item.MinScrapValue,

@@ -123,6 +123,7 @@ internal sealed record ItemDraftSnapshot(
     string DisplayName,
     bool Enabled,
     int Value,
+    bool InStore,
     float Weight,
     bool IsScrap,
     int MinScrapValue,
