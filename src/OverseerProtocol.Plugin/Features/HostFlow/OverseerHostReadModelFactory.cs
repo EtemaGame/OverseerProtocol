@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using OverseerProtocol.Configuration;
 using OverseerProtocol.Core.Logging;
+using OverseerProtocol.Features.HostFlow.AdvancedCompanyPort;
 
 namespace OverseerProtocol.Features.HostFlow;
 
@@ -26,11 +27,12 @@ internal sealed class OverseerHostReadModelFactory
             var builtIns = LobbyPresetDefinition.All
                 .Select(preset => new PresetSummary(preset.Id, preset.DisplayName, true))
                 .ToList();
+            var customPresets = new OverseerHostPresetStore().LoadSummaries();
 
             model = new OverseerHostReadModel(
                 activePreset.Id,
                 builtIns,
-                Array.Empty<PresetSummary>(),
+                customPresets,
                 new OverseerHostProfile(activePreset.Id, draft),
                 warnings);
 

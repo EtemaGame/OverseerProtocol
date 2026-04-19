@@ -25,12 +25,12 @@ internal sealed class OverseerEffectiveConfigBuilder
                 return Failure("Host profile is missing.");
 
             var buildWarnings = new List<string>();
-            if (!TryResolvePreset(profile.ActivePresetId, buildWarnings, out var activePreset, out var presetError))
+            if (!TryResolvePreset(profile.ActivePresetId, buildWarnings, out var activePreset, out var effectivePresetId, out var presetError))
                 return Failure(presetError);
 
             var draft = profile.Draft;
 
-            var snapshot = SnapshotDraft(draft, activePreset.Id);
+            var snapshot = SnapshotDraft(draft, effectivePresetId);
             var fingerprints = new FingerprintFeature().ComputeCurrent();
             var preMaterializationFingerprints = new FingerprintSnapshot(
                 fingerprints.ActivePreset,
@@ -50,7 +50,7 @@ internal sealed class OverseerEffectiveConfigBuilder
             plan = new EffectiveHostSessionPlan(
                 input,
                 profile,
-                new RuntimeApplyPlan(snapshot, ShouldMaterializeConfig: true, RuntimeApplicationDeferred: true, activePreset.Id),
+                new RuntimeApplyPlan(snapshot, ShouldMaterializeConfig: true, RuntimeApplicationDeferred: true, effectivePresetId),
                 multiplayer,
                 preMaterializationFingerprints,
                 buildWarnings);
@@ -76,29 +76,47 @@ internal sealed class OverseerEffectiveConfigBuilder
         }
     }
 
-    private static bool TryResolvePreset(string presetId, List<string> warnings, out LobbyPresetDefinition preset, out string error)
+    private static bool TryResolvePreset(string presetId, List<string> warnings, out LobbyPresetDefinition preset, out string effectivePresetId, out string error)
     {
         preset = null!;
+        effectivePresetId = "";
         error = "";
         var requested = string.IsNullOrWhiteSpace(presetId) ? OPConfig.DefaultPreset : presetId.Trim();
+        if (requested.StartsWith("custom:", StringComparison.OrdinalIgnoreCase))
+        {
+            var defaultPreset = LobbyPresetDefinition.All.FirstOrDefault(preset =>
+                string.Equals(preset.Id, OPConfig.DefaultPreset, StringComparison.OrdinalIgnoreCase));
+            if (defaultPreset == null)
+            {
+                error = "Default preset '" + OPConfig.DefaultPreset + "' was not found.";
+                return false;
+            }
+
+            preset = defaultPreset;
+            effectivePresetId = requested;
+            return true;
+        }
+
         var match = LobbyPresetDefinition.All.FirstOrDefault(preset =>
             string.Equals(preset.Id, requested, StringComparison.OrdinalIgnoreCase));
         if (match != null)
         {
             preset = match;
+            effectivePresetId = match.Id;
             return true;
         }
 
         warnings.Add("Preset '" + requested + "' was not found; default will be used.");
-        var defaultPreset = LobbyPresetDefinition.All.FirstOrDefault(preset =>
+        var fallbackPreset = LobbyPresetDefinition.All.FirstOrDefault(preset =>
             string.Equals(preset.Id, OPConfig.DefaultPreset, StringComparison.OrdinalIgnoreCase));
-        if (defaultPreset == null)
+        if (fallbackPreset == null)
         {
             error = "Default preset '" + OPConfig.DefaultPreset + "' was not found.";
             return false;
         }
 
-        preset = defaultPreset;
+        preset = fallbackPreset;
+        effectivePresetId = fallbackPreset.Id;
         return true;
     }
 

@@ -26,6 +26,7 @@ Write-Host ""
 # If any is missing the plugin will fail with FileNotFoundException on load.
 $requiredDlls = @(
     "OverseerProtocol.dll",
+    "AdvancedCompany.dll",
     "OverseerProtocol.Core.dll",
     "OverseerProtocol.Data.dll",
     "OverseerProtocol.GameAbstractions.dll"
@@ -67,6 +68,14 @@ Get-ChildItem $PluginSource -Filter "OverseerProtocol*.pdb" -ErrorAction Silentl
 if (Test-Path $RuntimeDev) {
     Copy-Item "$RuntimeDev\*" $PluginDest -Recurse -Force -ErrorAction SilentlyContinue
     Write-Host "  [ASSETS]  runtime/dev-plugin copied" -ForegroundColor DarkGray
+}
+
+$advancedCompanyAssets = Join-Path $PluginSource "advancedcompanyassets"
+if (Test-Path $advancedCompanyAssets) {
+    Copy-Item $advancedCompanyAssets $PluginDest -Force -ErrorAction Stop
+    Write-Host "  [ASSETS]  advancedcompanyassets copied" -ForegroundColor DarkGray
+} else {
+    Write-Warning "  [MISSING] $advancedCompanyAssets"
 }
 
 # ── Summary ───────────────────────────────────────────────────────────────────

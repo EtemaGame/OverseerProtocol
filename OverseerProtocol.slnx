@@ -1,5 +1,6 @@
 <Solution>
   <Folder Name="/src/">
+    <Project Path="src/AdvancedCompany/AdvancedCompany.csproj" />
     <Project Path="src/OverseerProtocol.Core/OverseerProtocol.Core.csproj" />
     <Project Path="src/OverseerProtocol.Data/OverseerProtocol.Data.csproj" />
     <Project Path="src/OverseerProtocol.GameAbstractions/OverseerProtocol.GameAbstractions.csproj" />
