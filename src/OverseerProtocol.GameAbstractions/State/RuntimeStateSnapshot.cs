@@ -83,12 +83,15 @@ public sealed class RuntimeStateSnapshot
                 level.LevelDescription,
                 level.minScrap,
                 level.maxScrap,
+                level.minTotalScrapValue,
+                level.maxTotalScrapValue,
+                CloneInteriorWeights(level.dungeonFlowTypes),
                 ClonePool(level.Enemies),
                 ClonePool(level.OutsideEnemies),
                 ClonePool(level.DaytimeEnemies));
             OPLog.Debug(
                 "Snapshot",
-                $"Captured moon state: moon={level.name}, riskLevel={level.riskLevel}, minScrap={level.minScrap}, maxScrap={level.maxScrap}, inside={level.Enemies?.Count ?? 0}, outside={level.OutsideEnemies?.Count ?? 0}, daytime={level.DaytimeEnemies?.Count ?? 0}");
+                $"Captured moon state: moon={level.name}, riskLevel={level.riskLevel}, minScrap={level.minScrap}, maxScrap={level.maxScrap}, minTotalScrapValue={level.minTotalScrapValue}, maxTotalScrapValue={level.maxTotalScrapValue}, inside={level.Enemies?.Count ?? 0}, outside={level.OutsideEnemies?.Count ?? 0}, daytime={level.DaytimeEnemies?.Count ?? 0}");
         }
 
         return _levels.Count;
@@ -188,6 +191,8 @@ public sealed class RuntimeStateSnapshot
             var beforeRisk = level.riskLevel;
             var beforeMin = level.minScrap;
             var beforeMax = level.maxScrap;
+            var beforeMinTotalScrapValue = level.minTotalScrapValue;
+            var beforeMaxTotalScrapValue = level.maxTotalScrapValue;
             var beforeInside = level.Enemies?.Count ?? 0;
             var beforeOutside = level.OutsideEnemies?.Count ?? 0;
             var beforeDaytime = level.DaytimeEnemies?.Count ?? 0;
@@ -195,12 +200,15 @@ public sealed class RuntimeStateSnapshot
             level.LevelDescription = state.Description;
             level.minScrap = state.MinScrap;
             level.maxScrap = state.MaxScrap;
+            level.minTotalScrapValue = state.MinTotalScrapValue;
+            level.maxTotalScrapValue = state.MaxTotalScrapValue;
+            level.dungeonFlowTypes = CloneInteriorWeights(state.DungeonFlowTypes);
             level.Enemies = ClonePool(state.InsideEnemies);
             level.OutsideEnemies = ClonePool(state.OutsideEnemies);
             level.DaytimeEnemies = ClonePool(state.DaytimeEnemies);
             OPLog.Debug(
                 "Snapshot",
-                $"Restored moon state: moon={level.name}, riskLevel {beforeRisk} -> {level.riskLevel}, minScrap {beforeMin} -> {level.minScrap}, maxScrap {beforeMax} -> {level.maxScrap}, inside {beforeInside} -> {level.Enemies.Count}, outside {beforeOutside} -> {level.OutsideEnemies.Count}, daytime {beforeDaytime} -> {level.DaytimeEnemies.Count}");
+                $"Restored moon state: moon={level.name}, riskLevel {beforeRisk} -> {level.riskLevel}, minScrap {beforeMin} -> {level.minScrap}, maxScrap {beforeMax} -> {level.maxScrap}, minTotalScrapValue {beforeMinTotalScrapValue} -> {level.minTotalScrapValue}, maxTotalScrapValue {beforeMaxTotalScrapValue} -> {level.maxTotalScrapValue}, inside {beforeInside} -> {level.Enemies.Count}, outside {beforeOutside} -> {level.OutsideEnemies.Count}, daytime {beforeDaytime} -> {level.DaytimeEnemies.Count}");
             restored++;
         }
 
@@ -266,6 +274,23 @@ public sealed class RuntimeStateSnapshot
         return result;
     }
 
+    private static IntWithRarity[] CloneInteriorWeights(IntWithRarity[]? source)
+    {
+        if (source == null || source.Length == 0)
+            return new IntWithRarity[0];
+
+        var result = new IntWithRarity[source.Length];
+        for (var i = 0; i < source.Length; i++)
+        {
+            var entry = source[i];
+            result[i] = entry == null
+                ? new IntWithRarity(0, 0, null)
+                : new IntWithRarity(entry.id, entry.rarity, entry.overrideLevelAmbience);
+        }
+
+        return result;
+    }
+
     private sealed class ItemState
     {
         public ItemState(float weight, int creditsWorth, int minValue, int maxValue, bool isScrap, bool requiresBattery)
@@ -293,6 +318,9 @@ public sealed class RuntimeStateSnapshot
             string description,
             int minScrap,
             int maxScrap,
+            int minTotalScrapValue,
+            int maxTotalScrapValue,
+            IntWithRarity[] dungeonFlowTypes,
             List<SpawnableEnemyWithRarity> insideEnemies,
             List<SpawnableEnemyWithRarity> outsideEnemies,
             List<SpawnableEnemyWithRarity> daytimeEnemies)
@@ -301,6 +329,9 @@ public sealed class RuntimeStateSnapshot
             Description = description;
             MinScrap = minScrap;
             MaxScrap = maxScrap;
+            MinTotalScrapValue = minTotalScrapValue;
+            MaxTotalScrapValue = maxTotalScrapValue;
+            DungeonFlowTypes = dungeonFlowTypes;
             InsideEnemies = insideEnemies;
             OutsideEnemies = outsideEnemies;
             DaytimeEnemies = daytimeEnemies;
@@ -310,6 +341,9 @@ public sealed class RuntimeStateSnapshot
         public string Description { get; }
         public int MinScrap { get; }
         public int MaxScrap { get; }
+        public int MinTotalScrapValue { get; }
+        public int MaxTotalScrapValue { get; }
+        public IntWithRarity[] DungeonFlowTypes { get; }
         public List<SpawnableEnemyWithRarity> InsideEnemies { get; }
         public List<SpawnableEnemyWithRarity> OutsideEnemies { get; }
         public List<SpawnableEnemyWithRarity> DaytimeEnemies { get; }

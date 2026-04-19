@@ -37,9 +37,14 @@ $missing = 0
 foreach ($dll in $requiredDlls) {
     $src = Join-Path $PluginSource $dll
     if (Test-Path $src) {
-        Copy-Item $src $PluginDest -Force
-        Write-Host "  [OK]      $dll" -ForegroundColor Green
-        $copied++
+        try {
+            Copy-Item $src $PluginDest -Force -ErrorAction Stop
+            Write-Host "  [OK]      $dll" -ForegroundColor Green
+            $copied++
+        } catch {
+            Write-Host "  [LOCKED]  $dll - close Gale/Lethal Company before deploying." -ForegroundColor Red
+            throw
+        }
     } else {
         Write-Warning "  [MISSING] $src"
         $missing++
@@ -49,8 +54,13 @@ foreach ($dll in $requiredDlls) {
 # ── Debug symbols (optional, all OverseerProtocol*.pdb) ───────────────────────
 Get-ChildItem $PluginSource -Filter "OverseerProtocol*.pdb" -ErrorAction SilentlyContinue |
     ForEach-Object {
-        Copy-Item $_.FullName $PluginDest -Force
-        Write-Host "  [PDB]     $($_.Name)" -ForegroundColor DarkGray
+        try {
+            Copy-Item $_.FullName $PluginDest -Force -ErrorAction Stop
+            Write-Host "  [PDB]     $($_.Name)" -ForegroundColor DarkGray
+        } catch {
+            Write-Host "  [LOCKED]  $($_.Name) - close Gale/Lethal Company before deploying." -ForegroundColor Red
+            throw
+        }
     }
 
 # ── Runtime assets (optional) ─────────────────────────────────────────────────

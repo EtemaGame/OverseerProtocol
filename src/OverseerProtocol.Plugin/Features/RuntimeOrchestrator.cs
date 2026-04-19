@@ -17,9 +17,9 @@ public sealed class RuntimeOrchestrator
     public void RunStartupPipeline()
     {
         var metrics = PhaseMetrics.Start("Runtime", "startup-pipeline");
-        OPLog.Info("Runtime", "=== TEST SIGNAL: STARTUP PIPELINE BEGIN ===");
+        RuntimeDiagnostics.LogTestSignal("Runtime", "=== TEST SIGNAL: STARTUP PIPELINE BEGIN ===");
         OPLog.Info("Runtime", "Running startup pipeline.");
-        OPLog.Info("Config", $"Active preset: {OPConfig.ActivePresetName}");
+        OPLog.Info("Config", $"Advanced preset: {OPConfig.ActivePresetName}");
         RuntimeDiagnostics.LogConfigSummary();
         RuntimeDiagnostics.LogRuntimePreconditions("startup-pipeline/begin");
 
@@ -40,17 +40,17 @@ public sealed class RuntimeOrchestrator
         LogFingerprints();
         OPLog.Info("Runtime", "Startup step 5/6: reset runtime state to snapshot before applying config.");
         ResetToSnapshot();
-        OPLog.Info("Runtime", "Startup step 6/6: apply preset, .cfg overrides, multipliers, and runtime rules.");
+        OPLog.Info("Runtime", "Startup step 6/6: apply preset, .cfg overrides, multipliers, and gameplay rules.");
         ApplyRuntimeConfiguration();
         RuntimeDiagnostics.LogRuntimePreconditions("startup-pipeline/end");
-        OPLog.Info("Runtime", "=== TEST SIGNAL: STARTUP PIPELINE END ===");
+        RuntimeDiagnostics.LogTestSignal("Runtime", "=== TEST SIGNAL: STARTUP PIPELINE END ===");
         metrics.Complete();
     }
 
     public void ReloadRuntimeConfiguration()
     {
         var metrics = PhaseMetrics.Start("Runtime", "reload-runtime-configuration");
-        OPLog.Info("Runtime", "=== TEST SIGNAL: RUNTIME RELOAD BEGIN ===");
+        RuntimeDiagnostics.LogTestSignal("Runtime", "=== TEST SIGNAL: RUNTIME RELOAD BEGIN ===");
         OPLog.Info("Runtime", "Reloading runtime configuration from snapshot.");
         RuntimeDiagnostics.LogRuntimePreconditions("reload/begin");
 
@@ -59,7 +59,7 @@ public sealed class RuntimeOrchestrator
             OPLog.Warning("Runtime", "No runtime snapshot is available. Reload aborted.");
             metrics.Warning();
             metrics.Complete();
-            OPLog.Info("Runtime", "=== TEST SIGNAL: RUNTIME RELOAD ABORTED ===");
+            RuntimeDiagnostics.LogTestSignal("Runtime", "=== TEST SIGNAL: RUNTIME RELOAD ABORTED ===");
             return;
         }
 
@@ -70,7 +70,7 @@ public sealed class RuntimeOrchestrator
         ResetToSnapshot();
         ApplyRuntimeConfiguration();
         RuntimeDiagnostics.LogRuntimePreconditions("reload/end");
-        OPLog.Info("Runtime", "=== TEST SIGNAL: RUNTIME RELOAD END ===");
+        RuntimeDiagnostics.LogTestSignal("Runtime", "=== TEST SIGNAL: RUNTIME RELOAD END ===");
         metrics.Complete();
     }
 
@@ -91,6 +91,12 @@ public sealed class RuntimeOrchestrator
         {
             RuntimeDiagnostics.LogFeatureDecision("Data export", true, "running catalog export");
             DataExportFeature.RunInitialExport();
+            if (OPConfig.DisableDiagnosticExportsAfterFirstRun.Value)
+            {
+                OPConfig.EnableDataExport.Value = false;
+                OPConfig.ConfigFile.Save();
+                OPLog.Info("Export", "Diagnostic exports completed once and were disabled by Utility.DisableDiagnosticExportsAfterFirstRun.");
+            }
             metrics.Applied();
         }
         else
@@ -111,8 +117,10 @@ public sealed class RuntimeOrchestrator
         config.BuildItemOverrides();
         config.BuildMoonOverrides();
         config.BuildSpawnOverrides();
-        config.BuildRuntimeRules();
+        config.BuildGameplayRouteRules();
+        new InteriorFeature(OPConfig.ConfigFile).BindRuntimeConfigEntries();
         OPConfig.ConfigFile.Save();
+        new LethalConfigBridgeFeature().RegisterDynamicConfig(OPConfig.ConfigFile);
         OPLog.Info("Config", "Runtime .cfg entries were bound and saved for discovered item, moon, and spawn IDs.");
         metrics.Applied();
         metrics.Complete();
@@ -153,46 +161,28 @@ public sealed class RuntimeOrchestrator
             OPLog.Info("Perks", "Perk catalog loading disabled by config.");
         }
 
-        if (OPConfig.EnableLobbyRulesLoading.Value)
-        {
-            RuntimeDiagnostics.LogFeatureDecision("Lobby rules", true, "resolve lobby rules from .cfg");
-            var lobbyRulesFeature = new LobbyRulesFeature();
-            lobbyRulesFeature.LoadOrCreate();
-        }
-        else
-        {
-            RuntimeDiagnostics.LogFeatureDecision("Lobby rules", false, "skip lobby .cfg rules");
-            OPLog.Info("LobbyRules", "Lobby rules loading disabled by config.");
-        }
+        RuntimeDiagnostics.LogFeatureDecision("Multiplayer", OPConfig.EnableMultiplayer.Value, "resolve multiplayer .cfg rules");
+        new LobbyRulesFeature().LoadOrCreate();
 
-        if (OPConfig.EnableRuntimeRulesLoading.Value)
-        {
-            RuntimeDiagnostics.LogFeatureDecision("Runtime rules", true, "resolve runtime rules from .cfg");
-            var runtimeRulesFeature = new RuntimeRulesFeature();
-            runtimeRulesFeature.LoadOrCreate();
-        }
-        else
-        {
-            RuntimeDiagnostics.LogFeatureDecision("Runtime rules", false, "skip runtime .cfg rules");
-            OPLog.Info("RuntimeRules", "Runtime rules loading disabled by config.");
-        }
+        RuntimeDiagnostics.LogFeatureDecision("Gameplay route rules", true, "resolve route multipliers from .cfg");
+        new GameplayRulesFeature().LoadOrCreate();
 
-        if (OPConfig.EnableExperimentalMultiplayer.Value)
+        if (OPConfig.EnableMultiplayer.Value)
         {
-            RuntimeDiagnostics.LogFeatureDecision("Experimental multiplayer", true, "apply diagnostics/scaffold");
-            var multiplayerFeature = new ExperimentalMultiplayerFeature();
+            RuntimeDiagnostics.LogFeatureDecision("Multiplayer", true, "apply max players and lobby metadata");
+            var multiplayerFeature = new MultiplayerFeature();
             multiplayerFeature.Apply();
         }
         else
         {
-            RuntimeDiagnostics.LogFeatureDecision("Experimental multiplayer", false, "skip experimental multiplayer scaffold");
-            OPLog.Info("Multiplayer", "Experimental multiplayer loading disabled by config.");
+            RuntimeDiagnostics.LogFeatureDecision("Multiplayer", false, "skip multiplayer patches");
+            OPLog.Info("Multiplayer", "Multiplayer disabled by config.");
         }
     }
 
     private static void ApplyRuntimeConfiguration()
     {
-        OPLog.Info("Runtime", "Applying runtime configuration in precedence order: snapshot -> built-in preset -> .cfg explicit overrides -> .cfg multipliers/toggles -> .cfg runtime rules.");
+        OPLog.Info("Runtime", "Applying runtime configuration in precedence order: snapshot -> built-in preset -> .cfg explicit overrides -> .cfg multipliers/toggles -> .cfg gameplay rules.");
         RuntimeDiagnostics.LogRuntimePreconditions("apply-runtime-configuration/before");
         var presetFeature = new PresetFeature();
         var presetRuntimeSettings = presetFeature.ResolveRuntimeSettings();
@@ -239,13 +229,10 @@ public sealed class RuntimeOrchestrator
         if (OPConfig.EnableRuntimeMultipliers.Value && !OPConfig.DryRunOverrides.Value)
         {
             RuntimeDiagnostics.LogFeatureDecision("Runtime multipliers", true, "apply effective cfg/preset multipliers");
-            var semanticDifficultyFeature = new SemanticDifficultyFeature();
-            var spawnRarityMultiplier = semanticDifficultyFeature.ApplyAggressionProfile(presetRuntimeSettings.SpawnRarityMultiplier);
-
             var runtimeMultiplierFeature = new RuntimeMultiplierFeature();
             runtimeMultiplierFeature.ApplyMultipliers(
                 presetRuntimeSettings.ItemWeightMultiplier,
-                spawnRarityMultiplier,
+                presetRuntimeSettings.SpawnRarityMultiplier,
                 presetRuntimeSettings.RoutePriceMultiplier);
         }
         else if (OPConfig.DryRunOverrides.Value)
@@ -259,21 +246,20 @@ public sealed class RuntimeOrchestrator
             OPLog.Info("Overrides", "Runtime multipliers disabled by config.");
         }
 
-        if (OPConfig.EnableRuntimeRulesLoading.Value && !OPConfig.DryRunOverrides.Value)
+        if (!OPConfig.DryRunOverrides.Value)
         {
-            RuntimeDiagnostics.LogFeatureDecision("Runtime rules application", true, "apply active .cfg runtime rule fields");
-            var runtimeRulesFeature = new RuntimeRulesFeature();
-            var runtimeRules = runtimeRulesFeature.LoadOrCreate();
-            runtimeRulesFeature.Apply(runtimeRules);
+            RuntimeDiagnostics.LogFeatureDecision("Gameplay route rules", true, "apply active .cfg route multiplier fields");
+            var gameplayRulesFeature = new GameplayRulesFeature();
+            var gameplayRules = gameplayRulesFeature.LoadOrCreate();
+            gameplayRulesFeature.Apply(gameplayRules);
+
+            RuntimeDiagnostics.LogFeatureDecision("Interior weights", true, "apply active .cfg interior weight fields");
+            new InteriorFeature(OPConfig.ConfigFile).ApplyInteriorWeights();
         }
         else if (OPConfig.DryRunOverrides.Value)
         {
-            RuntimeDiagnostics.LogFeatureDecision("Runtime rules application", false, "dry-run: load but do not apply");
-            OPLog.Info("RuntimeRules", "Dry-run enabled. Runtime rules were loaded but not applied.");
-        }
-        else
-        {
-            RuntimeDiagnostics.LogFeatureDecision("Runtime rules application", false, "disabled by config");
+            RuntimeDiagnostics.LogFeatureDecision("Gameplay route rules", false, "dry-run: load but do not apply");
+            OPLog.Info("Gameplay", "Dry-run enabled. Gameplay route rules were loaded but not applied.");
         }
 
         RuntimeDiagnostics.LogRuntimePreconditions("apply-runtime-configuration/after");

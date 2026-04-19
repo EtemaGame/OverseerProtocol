@@ -10,19 +10,25 @@ public static class RuntimeDiagnostics
 {
     public static void LogBootSummary()
     {
+        if (!OPConfig.VerboseDiagnostics.Value)
+            return;
+
         var modName = global::OverseerProtocol.Plugin.ModName;
         var modVersion = global::OverseerProtocol.Plugin.ModVersion;
-        OPLog.Info("Diagnostics", "=== TEST SIGNAL: BOOT DIAGNOSTICS BEGIN ===");
+        LogTestSignal("Diagnostics", "=== TEST SIGNAL: BOOT DIAGNOSTICS BEGIN ===");
         OPLog.Info("Diagnostics", $"Mod={modName}, version={modVersion}");
         OPLog.Info("Diagnostics", "Current test target: Fase 1 - build, load, exports, user tuning, snapshot, dry-run, route prices, admin hook.");
         LogPathSummary();
         LogConfigSummary();
         LogRuntimePreconditions("plugin-awake");
-        OPLog.Info("Diagnostics", "=== TEST SIGNAL: BOOT DIAGNOSTICS END ===");
+        LogTestSignal("Diagnostics", "=== TEST SIGNAL: BOOT DIAGNOSTICS END ===");
     }
 
     public static void LogPathSummary()
     {
+        if (!OPConfig.VerboseDiagnostics.Value)
+            return;
+
         OPLog.Info("Diagnostics", $"Path PluginRoot={OPPaths.PluginRoot}");
         OPLog.Info("Diagnostics", $"Path DataRoot={OPPaths.DataRoot}");
         OPLog.Info("Diagnostics", $"Path ExportRoot={OPPaths.ExportRoot}");
@@ -32,7 +38,7 @@ public static class RuntimeDiagnostics
 
     public static void LogConfigSummary()
     {
-        OPLog.Info("Diagnostics", $"Config ActivePreset={OPConfig.ActivePresetName}");
+        OPLog.Info("Diagnostics", $"Config Advanced.ActivePreset={OPConfig.ActivePresetName}");
         OPLog.Info(
             "Diagnostics",
             "Config flags: " +
@@ -41,17 +47,15 @@ public static class RuntimeDiagnostics
             $"EnableSpawnOverrides={Value(OPConfig.EnableSpawnOverrides)}, " +
             $"EnableMoonOverrides={Value(OPConfig.EnableMoonOverrides)}, " +
             $"EnableRuntimeMultipliers={Value(OPConfig.EnableRuntimeMultipliers)}, " +
-            $"EnableRuntimeRulesLoading={Value(OPConfig.EnableRuntimeRulesLoading)}, " +
             $"EnableProgressionStorage={Value(OPConfig.EnableProgressionStorage)}, " +
-            $"EnablePerkCatalog={Value(OPConfig.EnablePerkCatalog)}, " +
-            $"EnableLobbyRulesLoading={Value(OPConfig.EnableLobbyRulesLoading)}");
+            $"EnablePerkCatalog={Value(OPConfig.EnablePerkCatalog)}");
         OPLog.Info(
             "Diagnostics",
             "Config safety: " +
             $"DryRunOverrides={Value(OPConfig.DryRunOverrides)}, " +
             $"StrictValidation={Value(OPConfig.StrictValidation)}, " +
             $"AbortOnInvalidOverrideBlock={Value(OPConfig.AbortOnInvalidOverrideBlock)}, " +
-            $"EnableAdminTerminalCommands={Value(OPConfig.EnableAdminTerminalCommands)}, " +
+            $"AdminTerminalCommands=AlwaysOn, " +
             $"AdminCommandPrefix={Value(OPConfig.AdminCommandPrefix)}");
         OPLog.Info(
             "Diagnostics",
@@ -59,19 +63,22 @@ public static class RuntimeDiagnostics
             $"ItemWeightMultiplier={Value(OPConfig.ItemWeightMultiplier)}, " +
             $"SpawnRarityMultiplier={Value(OPConfig.SpawnRarityMultiplier)}, " +
             $"RoutePriceMultiplier={Value(OPConfig.RoutePriceMultiplier)}, " +
-            $"AggressionProfile={Value(OPConfig.AggressionProfile)}");
+            $"TravelDiscountMultiplier={Value(OPConfig.TravelDiscountMultiplier)}");
         OPLog.Info(
             "Diagnostics",
-            "Config experimental: " +
-            $"EnableExperimentalMultiplayer={Value(OPConfig.EnableExperimentalMultiplayer)}, " +
-            $"EnableExpandedLobbyPatch={Value(OPConfig.EnableExpandedLobbyPatch)}, " +
-            $"EnableLateJoinSafeMode={Value(OPConfig.EnableLateJoinSafeMode)}, " +
-            $"EnableSpectatorModeScaffold={Value(OPConfig.EnableSpectatorModeScaffold)}, " +
-            $"ExperimentalMaxPlayers={Value(OPConfig.ExperimentalMaxPlayers)}");
+            "Config multiplayer: " +
+            $"EnableMultiplayer={Value(OPConfig.EnableMultiplayer)}, " +
+            $"MaxPlayers={Value(OPConfig.MaxPlayers)}, " +
+            $"EnableLateJoin={Value(OPConfig.EnableLateJoin)}, " +
+            $"LateJoinInOrbit={Value(OPConfig.LateJoinInOrbit)}, " +
+            $"LateJoinOnMoonAsSpectator={Value(OPConfig.LateJoinOnMoonAsSpectator)}");
     }
 
     public static void LogRuntimePreconditions(string stage)
     {
+        if (!OPConfig.VerboseDiagnostics.Value)
+            return;
+
         var hasStartOfRound = StartOfRound.Instance != null;
         var levelCount = StartOfRound.Instance?.levels?.Length ?? 0;
         var itemCount = StartOfRound.Instance?.allItemsList?.itemsList?.Count ?? 0;
@@ -91,9 +98,18 @@ public static class RuntimeDiagnostics
 
     public static void LogFeatureDecision(string featureName, bool enabled, string action)
     {
+        if (OPConfig.ReduceVerboseLogs.Value && !OPConfig.VerboseDiagnostics.Value)
+            return;
+
         OPLog.Info(
             "Diagnostics",
             $"Feature decision: {featureName}, enabled={enabled}, action={action}");
+    }
+
+    public static void LogTestSignal(string tag, string message)
+    {
+        if (OPConfig.VerboseDiagnostics.Value)
+            OPLog.Info(tag, message);
     }
 
     private static string Value(ConfigEntry<bool>? entry) =>

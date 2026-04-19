@@ -51,6 +51,8 @@ RiskLevel = 3
 Description =
 MinScrap = 8
 MaxScrap = 12
+MinTotalScrapValue = 80
+MaxTotalScrapValue = 120
 InsideEnemiesEnabled = false
 InsideEnemies = Centipede:41, HoarderBug:41
 OutsideEnemiesEnabled = false
@@ -59,6 +61,8 @@ DaytimeEnemiesEnabled = false
 DaytimeEnemies = RedLocustBees:10
 RouteMultiplierEnabled = false
 RouteMultiplier = 1
+InteriorWeightsEnabled = false
+InteriorWeights = Factory:300, Mansion:100, Mineshaft:50
 ```
 
 Activo hoy cuando `Enabled=true`:
@@ -69,10 +73,10 @@ Activo hoy cuando `Enabled=true`:
 - `Description`: modifica la descripcion interna de la luna.
 - `MinScrap`: modifica el minimo de scrap del nivel.
 - `MaxScrap`: modifica el maximo de scrap del nivel.
+- `MinTotalScrapValue`: modifica el presupuesto minimo de valor total de scrap de la luna.
+- `MaxTotalScrapValue`: modifica el presupuesto maximo de valor total de scrap de la luna.
 
-Visible pero reservado:
-
-- `Interior`
+Los items muestran `MinScrapValue`/`MaxScrapValue` como rango base del asset. El valor final que ves in-game puede ser ajustado por el presupuesto total de scrap de la luna y la generacion de ronda.
 
 ## Enemigos Por Luna
 
@@ -86,29 +90,57 @@ InsideEnemies = Centipede:50, HoarderBug:20
 
 Cuando `<Pool>Enabled=true`, el pool se reemplaza por la lista correspondiente. Si la lista esta vacia, el pool queda vacio.
 
-## Multipliers Y Runtime Rules
+## Interiors
+
+Los interiores detectados en runtime generan secciones `Interiors.<InteriorId>`:
 
 ```ini
-[Multipliers]
+[Interiors.Factory]
+Enabled = false
+DisplayName = Factory
+RuntimeIndex = 0
+UsedByMoons = ExperimentationLevel, AssuranceLevel
+ObservedWeights = ExperimentationLevel:300, AssuranceLevel:300
+
+[Moons.AdamanceLevel]
+InteriorWeightsEnabled = false
+InteriorWeights = Factory:300, Mansion:100, Mineshaft:50
+```
+
+Los campos `RuntimeIndex`, `UsedByMoons` y `ObservedWeights` son informativos. Cuando `InteriorWeightsEnabled=true`, la luna usa solo los interiores listados y sus rarezas. Si la lista esta vacia o usa IDs desconocidos, OverseerProtocol no aplica el cambio y registra un warning.
+
+## Gameplay
+
+```ini
+[Gameplay]
+EnableMultipliers = true
 ItemWeightMultiplier = 1
 SpawnRarityMultiplier = 1
 RoutePriceMultiplier = 1
 TravelDiscountMultiplier = 1
-AggressionProfile = Balanced
 
 [Moons.AdamanceLevel]
 RouteMultiplierEnabled = false
 RouteMultiplier = 1
 ```
 
-## Secciones Planeadas
+## Utility
 
-`Interiors` y `Utility` no se generan todavia porque no tienen appliers runtime verificados. `Perks` solo contiene flags reales de persistencia/catalogo hasta que existan perks aplicables.
+```ini
+[Utility]
+ReduceVerboseLogs = true
+VerboseDiagnostics = false
+EnableDataExport = true
+DisableDiagnosticExportsAfterFirstRun = false
+NetworkLogLevel = Normal
+```
+
+`ReduceVerboseLogs` baja el ruido repetitivo de arranque. `VerboseDiagnostics` vuelve a habilitar precondiciones y senales de prueba detalladas.
 
 ## Precedencia Runtime
 
 ```text
-snapshot vanilla -> built-in preset -> enabled .cfg entity overrides -> .cfg multipliers/toggles -> .cfg runtime rules
+snapshot vanilla -> advanced preset -> enabled .cfg entity overrides -> .cfg gameplay/multiplayer/interior tuning
 ```
 
 `reload` relee el `.cfg`, reconstruye overrides, restaura snapshot y reaplica. `reset` solo restaura snapshot.

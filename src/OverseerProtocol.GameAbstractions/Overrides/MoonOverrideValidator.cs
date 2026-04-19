@@ -66,7 +66,9 @@ public sealed class MoonOverrideValidator
                 RoutePrice = ValidateRoutePrice(moonOverride.RoutePrice, references, report, $"{moonPath}.routePrice", moonOverride.MoonId),
                 Description = ValidateDescription(moonOverride.Description, report, $"{moonPath}.description", moonOverride.MoonId),
                 MinScrap = ValidateScrapCount(moonOverride.MinScrap, report, $"{moonPath}.minScrap", moonOverride.MoonId, "minScrap"),
-                MaxScrap = ValidateScrapCount(moonOverride.MaxScrap, report, $"{moonPath}.maxScrap", moonOverride.MoonId, "maxScrap")
+                MaxScrap = ValidateScrapCount(moonOverride.MaxScrap, report, $"{moonPath}.maxScrap", moonOverride.MoonId, "maxScrap"),
+                MinTotalScrapValue = ValidateTotalScrapValue(moonOverride.MinTotalScrapValue, report, $"{moonPath}.minTotalScrapValue", moonOverride.MoonId, "minTotalScrapValue"),
+                MaxTotalScrapValue = ValidateTotalScrapValue(moonOverride.MaxTotalScrapValue, report, $"{moonPath}.maxTotalScrapValue", moonOverride.MoonId, "maxTotalScrapValue")
             };
 
             if (validatedOverride.MinScrap.HasValue &&
@@ -77,12 +79,22 @@ public sealed class MoonOverrideValidator
                 validatedOverride.MaxScrap = validatedOverride.MinScrap;
             }
 
+            if (validatedOverride.MinTotalScrapValue.HasValue &&
+                validatedOverride.MaxTotalScrapValue.HasValue &&
+                validatedOverride.MaxTotalScrapValue.Value < validatedOverride.MinTotalScrapValue.Value)
+            {
+                report.Warning("MOON_TOTAL_SCRAP_VALUE_RANGE_REPAIRED", $"Moon '{moonOverride.MoonId}' maxTotalScrapValue is below minTotalScrapValue. maxTotalScrapValue was raised to minTotalScrapValue.", $"{moonPath}.maxTotalScrapValue");
+                validatedOverride.MaxTotalScrapValue = validatedOverride.MinTotalScrapValue;
+            }
+
             if (!validatedOverride.RiskLevel.HasValue &&
                 string.IsNullOrWhiteSpace(validatedOverride.RiskLabel) &&
                 !validatedOverride.RoutePrice.HasValue &&
                 string.IsNullOrWhiteSpace(validatedOverride.Description) &&
                 !validatedOverride.MinScrap.HasValue &&
-                !validatedOverride.MaxScrap.HasValue)
+                !validatedOverride.MaxScrap.HasValue &&
+                !validatedOverride.MinTotalScrapValue.HasValue &&
+                !validatedOverride.MaxTotalScrapValue.HasValue)
             {
                 report.Warning("MOON_OVERRIDE_EMPTY", $"Moon override for '{moonOverride.MoonId}' does not define any supported fields. Skipping moon override.", moonPath);
                 continue;
@@ -185,6 +197,26 @@ public sealed class MoonOverrideValidator
         {
             report.Warning("MOON_SCRAP_COUNT_CLAMPED", $"Moon '{moonId}' {field} {value.Value} is above 999. Clamped to 999.", path);
             return 999;
+        }
+
+        return value.Value;
+    }
+
+    private static int? ValidateTotalScrapValue(int? value, ValidationReport report, string path, string moonId, string field)
+    {
+        if (!value.HasValue)
+            return null;
+
+        if (value.Value < 0)
+        {
+            report.Warning("MOON_TOTAL_SCRAP_VALUE_CLAMPED", $"Moon '{moonId}' {field} {value.Value} is below 0. Clamped to 0.", path);
+            return 0;
+        }
+
+        if (value.Value > 99999)
+        {
+            report.Warning("MOON_TOTAL_SCRAP_VALUE_CLAMPED", $"Moon '{moonId}' {field} {value.Value} is above 99999. Clamped to 99999.", path);
+            return 99999;
         }
 
         return value.Value;

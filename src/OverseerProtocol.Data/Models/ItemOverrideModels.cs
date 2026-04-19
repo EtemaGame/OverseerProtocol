@@ -19,4 +19,6 @@ public sealed class ItemOverrideDefinition
     public int? MaxValue { get; set; }
     public bool? IsScrap { get; set; }
     public bool? RequiresBattery { get; set; }
+    public bool? IsConductiveMetal { get; set; }
+    public bool? TwoHanded { get; set; }
 }

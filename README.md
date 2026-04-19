@@ -31,7 +31,7 @@ The official project roadmap lives in [`ROADMAP.md`](ROADMAP.md). It is the sour
 
 Reference setup instructions live in [`docs/references-setup.md`](docs/references-setup.md).
 
-User tuning instructions live in [`docs/user-tuning-v1.md`](docs/user-tuning-v1.md).
+User tuning instructions live in [`docs/user-tuning-v1.md`](docs/user-tuning-v1.md). Multiplayer details live in [`docs/multiplayer-v1.md`](docs/multiplayer-v1.md).
 
 Latest implementation review: [`docs/implementation-review-2026-04-16.md`](docs/implementation-review-2026-04-16.md).
 
@@ -43,16 +43,18 @@ Latest implementation review: [`docs/implementation-review-2026-04-16.md`](docs/
 - [x] **BepInEx Config**: `.cfg` is the sole user-editable source of truth for runtime tuning.
 - [x] **Moon Economy V2**: Route price resolution and raw TerminalNode economy export.
 - [x] **Moon Tuning (V1)**: Risk labels and route prices through BepInEx `.cfg`.
-- [x] **Presets V1**: Built-in presets and safe multiplier defaults.
-- [x] **Semantic Difficulty V1**: Aggression profiles layered over spawn rarity multipliers.
+- [x] **Advanced Presets**: Optional built-in presets hidden under `[Advanced]`.
 - [x] **Runtime Snapshot V1**: In-memory vanilla baseline for reset/reload workflows.
-- [x] **Runtime Rules V1**: Data contract plus active route/travel-discount rule application.
-- [x] **Progression Persistence V1**: Data-only player/ship progression save model with ship debug commands.
+- [x] **Gameplay Route Rules V1**: `[Gameplay].TravelDiscountMultiplier` plus per-moon `RouteMultiplier` fields.
+- [x] **Progression Persistence V1**: Data-only player/ship progression save model surfaced in the Overseer panel.
 - [x] **Perk Catalog V1**: Seeded player and ship perk definition model.
-- [x] **Admin Commands V1**: Command service for export, reload, reset, fingerprints, rules, perks, progression, multiplayer, and handshake summaries.
-- [x] **Admin Terminal Hook V1**: Experimental terminal hook, disabled by default.
+- [x] **Interiors V1**: Runtime interior catalog plus per-moon `InteriorWeights` tuning.
+- [x] **Admin Commands V1**: Minimal always-on terminal command surface for `op help` and `op reload`.
+- [x] **Overseer Panel V1**: InputUtils-backed read-only HUD panel for multiplayer, player progression, and host-only ship perk state.
+- [x] **LethalConfig Bridge V1**: Optional in-game editor registration for dynamic item, moon, interior, and utility config entries when LethalConfig is installed.
+- [x] **Admin Terminal Hook V1**: Terminal hook for the small `op` command surface.
 - [x] **Handshake Contract V1**: Host/client compatibility payload with preset/config fingerprints and local comparison service.
-- [x] **Experimental Multiplayer V1**: Disabled-by-default scaffold for expanded lobby diagnostics, late-join policy, spectator diagnostics, and reserved sync snapshots.
+- [x] **Multiplayer V1**: Configurable max players, late-join policy, spectator-gated moon joins, and HUD/panel status.
 - [x] **Reference Setup V1**: Helper script for BepInEx/Harmony download and local game assembly copy.
 
 ## Current Verification Status

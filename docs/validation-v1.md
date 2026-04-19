@@ -41,4 +41,4 @@ Internally validators still consume normalized override collections, but the use
 
 - `StrictValidation = true`: warnings abort the affected tuning flow.
 - `AbortOnInvalidOverrideBlock = true`: warnings abort the affected tuning flow.
-- `DryRunOverrides = true`: validation runs, but item tuning, spawn tuning, moon tuning, runtime multipliers, and runtime rules do not mutate runtime state.
+- `DryRunOverrides = true`: validation runs, but item tuning, spawn tuning, moon tuning, runtime multipliers, gameplay route rules, and interior weights do not mutate runtime state.

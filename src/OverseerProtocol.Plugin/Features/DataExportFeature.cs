@@ -9,7 +9,7 @@ public static class DataExportFeature
 {
     public static void RunInitialExport()
     {
-        OPLog.Info("Export", "=== TEST SIGNAL: DATA EXPORT BEGIN ===");
+        RuntimeDiagnostics.LogTestSignal("Export", "=== TEST SIGNAL: DATA EXPORT BEGIN ===");
         OPLog.Info("Export", "Iniciando export de datos del juego...");
 
         // Price Resolver (Economy)
@@ -73,6 +73,6 @@ public static class DataExportFeature
         spawnExporter.ExportAll(spawnProfiles);
 
         OPLog.Info("Export", "Export inicial de datos completado.");
-        OPLog.Info("Export", "=== TEST SIGNAL: DATA EXPORT END ===");
+        RuntimeDiagnostics.LogTestSignal("Export", "=== TEST SIGNAL: DATA EXPORT END ===");
     }
 }

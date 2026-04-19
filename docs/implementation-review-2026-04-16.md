@@ -18,16 +18,18 @@ Because game assemblies are not present, this review could not verify Lethal Com
 
 ## Static Review Summary
 
+This review is historical. Current runtime-facing docs supersede any note below that says terminal or multiplayer is disabled by default.
+
 Implemented and wired:
 
 - Runtime orchestration with startup/reload/reset pipeline.
 - Phase metrics and startup fingerprints.
 - Strict validation policy through `AbortOnInvalidOverrideBlock`.
 - Runtime route/economy rules for travel discount and per-moon route price multipliers.
-- Experimental terminal admin hook, disabled by default.
-- Progression debug commands for ship XP/reset.
+- Minimal always-on terminal admin hook.
+- Progression/perk read-only panel.
 - Handshake compatibility comparison service.
-- Experimental multiplayer scaffolding, disabled by default.
+- Multiplayer V1 public config surface.
 - Reference setup helper for BepInEx and local game assemblies.
 
 ## High-Risk Areas Requiring Runtime Verification
@@ -37,17 +39,15 @@ Implemented and wired:
 - `TerminalNode` response rendering fields.
 - Route price mutation through `TerminalNode.itemCost`.
 - Moon risk mutation through `SelectableLevel.riskLevel`.
-- Reflection-based max player fields/properties.
-- Lifecycle hooks used by `ExperimentalMultiplayerHook`.
+- Multiplayer capacity, lobby metadata, and lifecycle hooks.
+- Lifecycle hooks used by `MultiplayerHook`.
 - Snapshot restore behavior after live runtime mutation.
 
 ## Known Safe Boundaries
 
-- Experimental multiplayer is off by default.
-- Admin terminal hook is off by default.
-- Late join `Moon` mode is blocked by policy.
-- Spectator support is diagnostics-only.
-- Runtime state sync snapshot is reserved and does not mutate gameplay.
+- Terminal command surface is limited to `op help` and `op reload`.
+- Moon late join is spectator-gated and avoids live mid-round respawn.
+- Runtime state sync snapshot is diagnostic and does not mutate gameplay.
 - Proprietary game assemblies are not downloaded from third-party sources.
 
 ## Verification Performed

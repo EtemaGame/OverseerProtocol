@@ -24,7 +24,7 @@ MaxScrapValue = 0
 
 Expected:
 
-- `value`, `weight`, `minValue`, and `maxValue` apply.
+- `value`, `weight`, `minValue`, and `maxValue` apply. Remember the final scanned scrap value can also be affected by the moon total scrap value budget.
 - `InStore=true` adds the item to the terminal store; `StorePrice` changes its price.
 
 ## Moon Tuning
@@ -59,15 +59,29 @@ Expected:
 - pool is replaced;
 - invalid enemy IDs warn and are skipped.
 
-## Planned Sections
+## Overseer Panel
 
-`Interiors` and `Utility` should not be generated until runtime appliers exist. `Perks` should only expose real persistence/perk flags, not placeholder rows.
+Press the in-game `Open Overseer Panel` keybind from the controls menu. Default keyboard binding: `P`.
+
+Expected:
+
+- multiplayer status is visible without typing terminal commands;
+- local player progression is visible to the local player;
+- ship perk/progression information is visible only to the host;
+- perk appliers are clearly marked as inactive until gameplay effects exist.
+
+## LethalConfig Bridge
+
+With LethalConfig installed and `[Utility].EnableLethalConfigBridge=true`:
+
+- OverseerProtocol appears in LethalConfig;
+- dynamic sections like `Items.<ItemId>`, `Moons.<MoonId>`, and `Interiors.<InteriorId>` are visible after hosting/loading into a runtime where catalogs exist;
+- editing values and pressing `Overseer / Apply current config` reapplies runtime tuning;
+- unsupported entries such as keybinds remain editable through Gale/BepInEx config.
 
 ## Commands
 
-With admin commands enabled:
+Terminal commands are intentionally minimal:
 
-- `op paths`
+- `op help`
 - `op reload`
-- `op reset`
-- `op fingerprint`

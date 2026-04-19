@@ -48,8 +48,10 @@ public sealed class RuntimeTuningConfig
             var addToStore = BindBool(section, "InStore", inStore, "Whether the item should be present in the Terminal store.");
             var storePrice = BindInt(section, "StorePrice", item.creditsWorth, "Price used when the item is in the Terminal store.", 0, 99999);
             var requiresBattery = BindBool(section, "RequiresBattery", item.requiresBattery, "Whether this item uses battery charge.");
-            var minValue = BindInt(section, "MinScrapValue", item.minValue, "Minimum randomized scrap value.", 0, 99999);
-            var maxValue = BindInt(section, "MaxScrapValue", item.maxValue, "Maximum randomized scrap value.", 0, 99999);
+            var isConductive = BindBool(section, "Conductive", item.isConductiveMetal, "Whether this item conducts lightning.");
+            var twoHanded = BindBool(section, "TwoHanded", item.twoHanded, "Whether this item uses both hands.");
+            var minValue = BindInt(section, "MinScrapValue", item.minValue, "Base minimum randomized scrap value. The final in-game value can be scaled by the moon total scrap budget.", 0, 99999);
+            var maxValue = BindInt(section, "MaxScrapValue", item.maxValue, "Base maximum randomized scrap value. The final in-game value can be scaled by the moon total scrap budget.", 0, 99999);
 
             if (!enabled.Value)
                 continue;
@@ -63,6 +65,8 @@ public sealed class RuntimeTuningConfig
                 AddToStore = addToStore.Value,
                 StorePrice = storePrice.Value,
                 RequiresBattery = requiresBattery.Value,
+                IsConductiveMetal = isConductive.Value,
+                TwoHanded = twoHanded.Value,
                 MinValue = minValue.Value,
                 MaxValue = maxValue.Value
             });
@@ -98,8 +102,8 @@ public sealed class RuntimeTuningConfig
             var description = BindString(section, "Description", TryReadStringMember(level, "LevelDescription", "levelDescription", "sceneName") ?? "", "Moon description text.");
             var minScrap = BindInt(section, "MinScrap", ReadIntMember(level, "minScrap"), "Minimum scrap items for this moon.", 0, 999);
             var maxScrap = BindInt(section, "MaxScrap", ReadIntMember(level, "maxScrap"), "Maximum scrap items for this moon.", 0, 999);
-            BindString(section, "Interior", "reserved", "Reserved until dungeon-flow hooks are verified.");
-
+            var minTotalScrapValue = BindInt(section, "MinTotalScrapValue", level.minTotalScrapValue, "Minimum total value target for all scrap spawned on this moon.", 0, 99999);
+            var maxTotalScrapValue = BindInt(section, "MaxTotalScrapValue", level.maxTotalScrapValue, "Maximum total value target for all scrap spawned on this moon.", 0, 99999);
             BindEnemyPool(section, "InsideEnemies", level.Enemies);
             BindEnemyPool(section, "OutsideEnemies", level.OutsideEnemies);
             BindEnemyPool(section, "DaytimeEnemies", level.DaytimeEnemies);
@@ -117,7 +121,9 @@ public sealed class RuntimeTuningConfig
                 RiskLabel = tier.Value,
                 Description = description.Value,
                 MinScrap = minScrap.Value,
-                MaxScrap = maxScrap.Value
+                MaxScrap = maxScrap.Value,
+                MinTotalScrapValue = minTotalScrapValue.Value,
+                MaxTotalScrapValue = maxTotalScrapValue.Value
             });
         }
 
@@ -164,9 +170,9 @@ public sealed class RuntimeTuningConfig
         return collection;
     }
 
-    public RuntimeRulesDefinition BuildRuntimeRules()
+    public GameplayRouteRulesDefinition BuildGameplayRouteRules()
     {
-        var rules = new RuntimeRulesDefinition();
+        var rules = new GameplayRouteRulesDefinition();
         rules.Economy.TravelDiscountMultiplier = OPConfig.TravelDiscountMultiplier.Value;
 
         var levels = StartOfRound.Instance?.levels;
@@ -184,13 +190,13 @@ public sealed class RuntimeTuningConfig
             if (!enabled.Value || Math.Abs(multiplier.Value - 1f) < 0.0001f)
                 continue;
 
-            rules.MoonRules[level.name] = new MoonRuntimeRuleDefinition
+            rules.MoonRules[level.name] = new MoonGameplayRouteRuleDefinition
             {
                 RoutePriceMultiplier = multiplier.Value
             };
         }
 
-        OPLog.Info("Config", $"Resolved runtime rules config: travelDiscount={rules.Economy.TravelDiscountMultiplier:0.###}, moonRules={rules.MoonRules.Count}");
+        OPLog.Info("Config", $"Resolved gameplay route config: travelDiscount={rules.Economy.TravelDiscountMultiplier:0.###}, moonRouteMultipliers={rules.MoonRules.Count}");
         return rules;
     }
 

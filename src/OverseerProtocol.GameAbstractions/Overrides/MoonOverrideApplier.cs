@@ -103,6 +103,20 @@ public sealed class MoonOverrideApplier
                 applied = true;
             }
 
+            if (moonOverride.MinTotalScrapValue.HasValue)
+            {
+                OPLog.Info("Overrides", $"Overriding {level.name}.minTotalScrapValue: {level.minTotalScrapValue} -> {moonOverride.MinTotalScrapValue.Value}");
+                level.minTotalScrapValue = moonOverride.MinTotalScrapValue.Value;
+                applied = true;
+            }
+
+            if (moonOverride.MaxTotalScrapValue.HasValue)
+            {
+                OPLog.Info("Overrides", $"Overriding {level.name}.maxTotalScrapValue: {level.maxTotalScrapValue} -> {moonOverride.MaxTotalScrapValue.Value}");
+                level.maxTotalScrapValue = moonOverride.MaxTotalScrapValue.Value;
+                applied = true;
+            }
+
             if (applied)
                 appliedMoonCount++;
             else

@@ -65,7 +65,9 @@ public sealed class ItemOverrideValidator
                 MinValue = ValidateCreditsWorth(itemOverride.MinValue, report, $"{itemPath}.minValue", itemOverride.Id),
                 MaxValue = ValidateCreditsWorth(itemOverride.MaxValue, report, $"{itemPath}.maxValue", itemOverride.Id),
                 IsScrap = itemOverride.IsScrap,
-                RequiresBattery = itemOverride.RequiresBattery
+                RequiresBattery = itemOverride.RequiresBattery,
+                IsConductiveMetal = itemOverride.IsConductiveMetal,
+                TwoHanded = itemOverride.TwoHanded
             };
 
             if (validatedOverride.MinValue.HasValue &&
@@ -83,7 +85,9 @@ public sealed class ItemOverrideValidator
                 !validatedOverride.MinValue.HasValue &&
                 !validatedOverride.MaxValue.HasValue &&
                 !validatedOverride.IsScrap.HasValue &&
-                !validatedOverride.RequiresBattery.HasValue)
+                !validatedOverride.RequiresBattery.HasValue &&
+                !validatedOverride.IsConductiveMetal.HasValue &&
+                !validatedOverride.TwoHanded.HasValue)
             {
                 report.Warning("ITEM_OVERRIDE_EMPTY", $"Item override for '{itemOverride.Id}' does not define any supported fields. Skipping item override.", itemPath);
                 continue;

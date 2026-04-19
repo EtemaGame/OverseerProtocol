@@ -33,7 +33,8 @@ public sealed class HandshakeFeature
                 OPConfig.EnableRuntimeMultipliers.Value ? "runtime-multipliers" : "runtime-multipliers:disabled",
                 OPConfig.EnableProgressionStorage.Value ? "progression-storage" : "progression-storage:disabled",
                 OPConfig.EnablePerkCatalog.Value ? "perk-catalog" : "perk-catalog:disabled",
-                OPConfig.EnableRuntimeRulesLoading.Value ? "runtime-rules" : "runtime-rules:disabled"
+                OPConfig.EnableMultiplayer.Value ? "multiplayer" : "multiplayer:disabled",
+                OPConfig.RequireSameConfigHash.Value ? "config-hash-required" : "config-hash-optional"
             }
         };
 

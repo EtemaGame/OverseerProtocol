@@ -81,10 +81,4 @@ Seeded ship perk IDs:
 
 ## Debug Commands
 
-The admin command service includes data-only progression debug commands:
-
-- `op progression`
-- `op progression grant ship <amount>`
-- `op progression reset ship`
-
-These mutate `progression.json` only. They do not apply gameplay perk effects by themselves.
+Progression is no longer managed through terminal commands. The in-game Overseer panel exposes read-only progression/perk state through the `Open Overseer Panel` InputUtils keybind. Hosts can see ship perk state, while players only see their own player progression. Gameplay perk effects are still future work.

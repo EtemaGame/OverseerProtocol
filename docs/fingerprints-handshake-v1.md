@@ -10,7 +10,7 @@ OverseerProtocol computes fingerprints for future host/client compatibility chec
 - `presetFingerprint`
 - `configFingerprint`
 
-The preset fingerprint hashes the selected built-in preset name. The config fingerprint hashes relevant `.cfg` state, including toggles, validation mode, multipliers, item/moon/spawn overrides, lobby rules, and runtime rules.
+The preset fingerprint hashes the selected built-in preset name when an advanced preset is active. The config fingerprint hashes relevant `.cfg` state, including toggles, validation mode, multipliers, item/moon/spawn overrides, multiplayer policy, and gameplay route rules.
 
 No JSON tuning files are fingerprint inputs.
 

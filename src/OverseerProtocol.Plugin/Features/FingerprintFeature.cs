@@ -14,7 +14,7 @@ public sealed class FingerprintFeature
         var itemOverrides = runtimeConfig.BuildItemOverrides();
         var moonOverrides = runtimeConfig.BuildMoonOverrides();
         var spawnOverrides = runtimeConfig.BuildSpawnOverrides();
-        var runtimeRules = runtimeConfig.BuildRuntimeRules();
+        var gameplayRules = runtimeConfig.BuildGameplayRouteRules();
 
         var configText =
             "preset=" + presetName + "\n" +
@@ -28,11 +28,10 @@ public sealed class FingerprintFeature
             "spawnRarityMultiplier=" + OPConfig.SpawnRarityMultiplier.Value.ToString("R") + "\n" +
             "routePriceMultiplier=" + OPConfig.RoutePriceMultiplier.Value.ToString("R") + "\n" +
             "travelDiscountMultiplier=" + OPConfig.TravelDiscountMultiplier.Value.ToString("R") + "\n" +
-            "aggressionProfile=" + OPConfig.AggressionProfile.Value + "\n" +
             "items=" + string.Join(";", itemOverrides.Overrides.OrderBy(item => item.Id).Select(item => item.Id + ":" + item.CreditsWorth + ":" + item.Weight)) + "\n" +
             "moons=" + string.Join(";", moonOverrides.Overrides.OrderBy(moon => moon.MoonId).Select(moon => moon.MoonId + ":" + moon.RoutePrice + ":" + moon.RiskLevel + ":" + moon.RiskLabel)) + "\n" +
             "spawns=" + string.Join(";", spawnOverrides.Overrides.OrderBy(spawn => spawn.MoonId).Select(FormatSpawnOverride)) + "\n" +
-            "moonRules=" + string.Join(";", runtimeRules.MoonRules.OrderBy(pair => pair.Key).Select(pair => pair.Key + ":" + pair.Value.RoutePriceMultiplier.ToString("R"))) + "\n";
+            "moonRouteMultipliers=" + string.Join(";", gameplayRules.MoonRules.OrderBy(pair => pair.Key).Select(pair => pair.Key + ":" + pair.Value.RoutePriceMultiplier.ToString("R"))) + "\n";
 
         OPLog.Info("Fingerprint", "Fingerprint config input:\n" + configText);
 

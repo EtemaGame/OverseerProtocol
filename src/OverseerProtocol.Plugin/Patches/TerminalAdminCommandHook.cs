@@ -14,12 +14,6 @@ internal static class TerminalAdminCommandHook
 
     public static void TryPatch(Harmony harmony)
     {
-        if (!OPConfig.EnableAdminTerminalCommands.Value)
-        {
-            OPLog.Info("Admin", "Admin terminal commands disabled by config.");
-            return;
-        }
-
         var target = AccessTools.Method(typeof(Terminal), "ParsePlayerSentence");
         if (target == null)
         {
@@ -36,9 +30,6 @@ internal static class TerminalAdminCommandHook
     {
         try
         {
-            if (!OPConfig.EnableAdminTerminalCommands.Value)
-                return true;
-
             var input = TryReadSubmittedTerminalText(__instance);
             OPLog.Info("Admin", $"Terminal hook captured input: '{input}'");
             var result = CommandService.Execute(input);

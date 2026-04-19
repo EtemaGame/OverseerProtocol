@@ -10,7 +10,7 @@ Regla guia:
 
 - No convertir contratos data-only en promesas de gameplay hasta que esten aplicados, verificados y documentados como runtime.
 - Todo hook delicado debe tener un feature flag de apagado.
-- Todo campo no verificado debe quedar marcado como data-only, reserved o experimental.
+- Todo campo no verificado debe quedar como diagnostico, oculto o protegido por feature flag.
 
 ## Estado Actual Implementado / Pendiente De Re-Verificacion
 
@@ -34,12 +34,12 @@ Regla guia:
 
 ### Contratos Data-Only Listos Para Integrar
 
-- Runtime rules desde `.cfg`: travel discount y route multiplier per-moon activos; otros campos reservados.
-- Lobby rules desde `.cfg`: expanded lobby, late join modes y sync flags.
+- Gameplay route rules desde `.cfg`: travel discount y route multiplier per-moon activos.
+- Multiplayer desde `.cfg`: max players, late join policy, HUD y compatibilidad basica.
 - `progression.json`: progreso player/ship.
 - `perks.json`: catalogo seed de perks player/ship.
 - `ProtocolHandshakeDefinition`: fingerprints, feature flags y reglas host/client.
-- `AdminCommandService`: comandos listos, pendiente hook real a Terminal.
+- `AdminCommandService`: superficie minima siempre activa para `op help` y `op reload`.
 
 ## Fases
 
@@ -66,7 +66,7 @@ Objetivo: convertir el nucleo en sistema usable por host/modpack maker.
 
 Tareas:
 
-- Formalizar precedencia: snapshot vanilla, preset interno, overrides `.cfg`, multipliers/toggles `.cfg`, runtime rules `.cfg`.
+- Formalizar precedencia: snapshot vanilla, preset avanzado, overrides `.cfg`, multipliers/toggles `.cfg`, gameplay route rules `.cfg`.
 - Completar docs de IDs, fields y contratos.
 - Consolidar validacion comun y `AbortOnInvalidOverrideBlock`.
 - Anadir metricas por fase: aplicados, omitidos, warnings, errores y duracion.
@@ -89,38 +89,29 @@ Tareas:
   - quota multiplier.
   - deadline multiplier.
   - scrap value multiplier.
-- Marcar cada campo como `active`, `reserved` o `experimental`.
+- Marcar cada campo como activo, diagnostico u oculto tras feature flag.
 
 Resultado:
 
 - Runtime rules en `.cfg` empiezan a producir gameplay real sin sobredimensionarse.
 
-### Fase 4 - Terminal/Admin Hook Apagable
+### Fase 4 - Terminal/Admin Hook Minimo
 
-Objetivo: conectar `AdminCommandService` a la Terminal real sin arriesgar compatibilidad.
+Objetivo: conectar `AdminCommandService` a la Terminal real sin convertir la Terminal en una segunda UI de debug.
 
 Tareas:
 
-- Anadir `EnableAdminTerminalCommands`.
 - Hook Harmony aislado para input de Terminal.
 - Ejecutar solo comandos con prefijo `op`.
 - Mantener fallback seguro al flujo vanilla.
-- Activar comandos:
+- Activar solo comandos con efecto practico de testing:
   - `op help`
-  - `op preset`
-  - `op paths`
-  - `op export`
   - `op reload`
-  - `op reset`
-  - `op fingerprint`
-  - `op rules`
-  - `op perks`
-  - `op handshake`
-  - `op validate`
+- Mover estado multiplayer, progression y perks al panel in-game.
 
 Resultado:
 
-- Host/modder puede diagnosticar y recargar sin reiniciar.
+- Host/modder puede recargar config sin reiniciar; la informacion visual vive en HUD/panel.
 
 ### Fase 5 - Persistencia Y Perk Appliers Conservadores
 
@@ -139,12 +130,12 @@ Tareas:
 - Implementar perks seguros:
   - player sprint/stamina/carry/climb/resistance solo con campos confirmados.
   - ship scanner/battery/travel discount/deadline solo con hooks confirmados.
-- Anadir comandos debug para inspect/grant/reset/respec.
+- Mostrar estado de progression/perks en panel in-game; no usar comandos terminal para perks hasta que existan appliers reales.
 - Versionar migraciones simples de `progression.json`.
 
 Gate B:
 
-- No avanzar a progresion rica sin runtime rules minimas aplicadas, terminal/admin usable y strict validation clara.
+- No avanzar a progresion rica sin gameplay route rules minimas aplicadas, terminal/admin usable y strict validation clara.
 
 ### Fase 6 - Sistema Completo De Host-Configurable Run
 
@@ -160,8 +151,8 @@ Tareas:
   - weather reward tuning.
   - loot retention si hay hook seguro.
   - landing/dropship timing si hay hook seguro.
-- Integrar runtime rules `.cfg` con presets y fingerprints.
-- Mostrar resumen desde `op rules`.
+- Integrar gameplay route rules `.cfg` con presets y fingerprints.
+- Mostrar resumen desde HUD/panel.
 
 Resultado:
 
@@ -250,10 +241,10 @@ Resultado:
 
 - Fase 1 se considera cerrada cuando el plugin compila, carga sin excepciones, genera exports/seeds esperados y valida snapshot/reload/reset en runtime.
 - Fase 2 se considera cerrada cuando la precedencia esta documentada, los logs muestran preset/config efectivos, las metricas por fase existen y los fingerprints aparecen en startup.
-- Fase 3 se considera cerrada cuando route price global/per-moon y travel discount aplican desde `.cfg` con campos marcados como `active`, `reserved` o `experimental`.
-- Fase 4 se considera cerrada cuando `EnableAdminTerminalCommands` permite apagar el hook, los comandos `op` funcionan y el flujo vanilla de Terminal no se rompe.
+- Fase 3 se considera cerrada cuando route price global/per-moon y travel discount aplican desde `.cfg` con campos activos y documentados.
+- Fase 4 se considera cerrada cuando `op help` y `op reload` funcionan siempre, el panel cubre informacion visual y el flujo vanilla de Terminal no se rompe.
 - Fase 5 se considera cerrada cuando progression usa policy definida, los saves versionados migran sin corrupcion y los perk appliers conservadores tienen comandos debug.
-- Fase 6 se considera cerrada cuando el host puede configurar economia/run rules desde presets/rules y revisar el resumen efectivo con `op rules`.
+- Fase 6 se considera cerrada cuando el host puede configurar economia/run rules desde presets/rules y revisar el resumen efectivo desde HUD/panel.
 - Fase 7 se considera cerrada cuando host/cliente comparan handshake/fingerprints en pruebas reales y la politica warning/reject queda registrada en logs.
 - Fase 8 se considera cerrada cuando existe decision documentada de continuar, pausar o archivar expanded lobby segun evidencia tecnica.
 - Fase 9 se considera cerrada cuando `OrbitOnly` y `ShipOnly` funcionan en pruebas multi-cliente sin intentar recuperar estado de moon.
@@ -275,7 +266,7 @@ Vocabulario base: `Implemented`, `Runtime Verified`, `Pending Runtime Verificati
 | Presets/config hibrida | Implemented / Pending Runtime Verification |
 | Runtime rules | Partially Active / Experimental |
 | Admin commands | Implemented / Service Ready |
-| Terminal hook | Experimental / Disabled By Default |
+| Terminal hook | Implemented / Always On Minimal Surface |
 | Progression store | Data-Only |
 | Perk catalog | Data-Only |
 | Perk appliers | Planned |
@@ -317,6 +308,7 @@ Vocabulario base: `Implemented`, `Runtime Verified`, `Pending Runtime Verificati
 - Snapshot reset/reload funciona.
 - Route prices y moon risk cambian in-game.
 - Terminal hook no rompe comandos vanilla.
+- Panel in-game con keybind configurable muestra estado multiplayer y progression/perks sin depender de comandos terminal.
 - Fingerprints cambian al modificar config/preset.
 - Progression/perks no corrompen saves.
 
@@ -325,7 +317,7 @@ Vocabulario base: `Implemented`, `Runtime Verified`, `Pending Runtime Verificati
 - `default` usa la configuracion BepInEx `.cfg` y no depende de JSON editable.
 - Presets no sobrescriben archivos editados por usuario.
 - Todo hook delicado debe tener config para apagarse.
-- Todo campo no verificado debe quedar como data-only, reserved o experimental.
+- Todo campo no verificado debe quedar como diagnostico, oculto o protegido por feature flag.
 - La prioridad del proyecto es estabilidad, mantenibilidad y observabilidad antes que paridad rapida con AdvancedCompany.
 
 ## Compatibilidad Y Versionado

@@ -17,4 +17,6 @@ public sealed class MoonOverrideDefinition
     public string? Description { get; set; }
     public int? MinScrap { get; set; }
     public int? MaxScrap { get; set; }
+    public int? MinTotalScrapValue { get; set; }
+    public int? MaxTotalScrapValue { get; set; }
 }

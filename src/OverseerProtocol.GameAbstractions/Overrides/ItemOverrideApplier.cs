@@ -105,7 +105,19 @@ public sealed class ItemOverrideApplier
             item.requiresBattery = def.RequiresBattery.Value;
         }
 
-        if (!def.CreditsWorth.HasValue && !def.Weight.HasValue && !def.MinValue.HasValue && !def.MaxValue.HasValue && !def.IsScrap.HasValue && !def.RequiresBattery.HasValue)
+        if (def.IsConductiveMetal.HasValue)
+        {
+            OPLog.Info("Overrides", $"Overriding {item.name}.isConductiveMetal: {item.isConductiveMetal} -> {def.IsConductiveMetal.Value}");
+            item.isConductiveMetal = def.IsConductiveMetal.Value;
+        }
+
+        if (def.TwoHanded.HasValue)
+        {
+            OPLog.Info("Overrides", $"Overriding {item.name}.twoHanded: {item.twoHanded} -> {def.TwoHanded.Value}");
+            item.twoHanded = def.TwoHanded.Value;
+        }
+
+        if (!def.CreditsWorth.HasValue && !def.Weight.HasValue && !def.MinValue.HasValue && !def.MaxValue.HasValue && !def.IsScrap.HasValue && !def.RequiresBattery.HasValue && !def.IsConductiveMetal.HasValue && !def.TwoHanded.HasValue)
             OPLog.Info("Overrides", $"Item tuning entry for {item.name} had no direct value/weight/range/flag fields.");
     }
 
