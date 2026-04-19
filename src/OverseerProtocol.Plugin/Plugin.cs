@@ -48,7 +48,7 @@ namespace OverseerProtocol
             _harmony.PatchAll();
             TerminalAdminCommandHook.TryPatch(_harmony);
             MultiplayerHook.TryPatch(_harmony);
-            LobbyHostMenuHook.TryPatch(_harmony);
+            OverseerHostEntryPatch.TryPatch(_harmony);
             gameObject.AddComponent<MultiplayerStatusHud>();
             _overseerInfoPanel = gameObject.AddComponent<OverseerInfoPanel>();
             _overseerInfoPanel.Initialize();
