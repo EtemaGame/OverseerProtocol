@@ -69,7 +69,8 @@ $GameDlls = @(
     "Assembly-CSharp.dll",
     "UnityEngine.dll",
     "UnityEngine.CoreModule.dll",
-    "Unity.Netcode.Runtime.dll"
+    "Unity.Netcode.Runtime.dll",
+    "UnityEngine.UIModule.dll"
 )
 
 Copy-Dlls $BepInExCorePath $RefBepInEx $BepInExDlls "BepInEx"

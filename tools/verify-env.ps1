@@ -41,6 +41,7 @@ $allOk = (Check-Path (Join-Path $RefGame "Assembly-CSharp.dll") "Assembly-CSharp
 $allOk = (Check-Path (Join-Path $RefGame "Unity.Netcode.Runtime.dll") "Unity.Netcode.Runtime.dll") -and $allOk
 $allOk = (Check-Path (Join-Path $RefGame "UnityEngine.dll") "UnityEngine.dll") -and $allOk
 $allOk = (Check-Path (Join-Path $RefGame "UnityEngine.CoreModule.dll") "UnityEngine.CoreModule.dll") -and $allOk
+$allOk = (Check-Path (Join-Path $RefGame "UnityEngine.UIModule.dll") "UnityEngine.UIModule.dll") -and $allOk
 
 if (![string]::IsNullOrWhiteSpace($GamePath)) {
     Check-Path $GamePath "Local Lethal Company install" $false | Out-Null

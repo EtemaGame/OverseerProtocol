@@ -48,6 +48,10 @@
       <HintPath>$(GameReferences)UnityEngine.UI.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="UnityEngine.UIModule">
+      <HintPath>$(GameReferences)UnityEngine.UIModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Unity.TextMeshPro">
       <HintPath>$(GameReferences)Unity.TextMeshPro.dll</HintPath>
       <Private>False</Private>
